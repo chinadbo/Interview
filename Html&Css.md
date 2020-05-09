@@ -131,3 +131,9 @@
       -webkit-overflow-scrolling: touch; // 弹性
     }
     ```
+26. Android 设备图片模糊
+    分辨率太小，用 2X 图片，`background-size:contain`
+27. 是否全屏模式
+    `<meta name="apple-mobile-web-app-capable" content="yes">`
+28. 设置缓存
+    `<meta http-equiv="Cache-Control" content="no-cache">`
