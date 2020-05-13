@@ -228,13 +228,24 @@ DNS 查询的两种方式：
 TCP 还设有一个保活计时器，显然，客户端如果出现故障，服务器不能一直等下去，白白浪费资源。服务器每收到一次客户端的请求后都会重新复位这个计时器，时间通常是设置为 2 小时，若两小时还没有收到客户端的任何数据，服务器就会发送一个探测报文段，以后每隔 75 秒钟发送一次。若一连发送 10 个探测报文仍然没反应，服务器就认为客户端出了故障，接着就关闭连接。
 
 5. cookie 放哪里？cookie 能做的事情和存在的价值
-   Cookie
+   **Cookie**
 
    - cookie 是存在浏览器上的一小段数据，有保质期
    - 可 js 设置，也可服务器下发 set-cookie 操作
    - 大小限制，一般容量 4k 左右
    - 安全性，document.cookie 可查看当前网站的 cookie（无 HttpOnly）
    - 满足同源策略
+   - SameSite
+     - None - 无论是否跨站都会携带 cookie （只能在 HTTPS 环境下，secure 下运行）
+     - Strict - 只允许同站发送 cookie
+       - 同站：只要两个 URL 的 eTLD+1 相同即可，不需要考虑协议和端口，eTLD 表示有效顶级域名
+     - Lax
+       - chrome 80 默认 Lax，允许部分第三方携带 cookie
+       - POST 表单、AJAX、iframe、image 不发送 cookie
+       - script 方式 jsonp 不发送 cookie
+       - **解决方案：设置 SameSite=None**
+         - HTTP 接口不支持 SameSite=None，所以加上 Secure
+         - UA 检测（IOS12 safari 和老版本 Chrome 把 SameSite=None 识别成 Strict）不下发 SameSite=None
 
    Cookie 价值
 
