@@ -1,3 +1,32 @@
+- [React](#react)
+  - [Redux](#redux)
+    - [三大原则](#%e4%b8%89%e5%a4%a7%e5%8e%9f%e5%88%99)
+      - [Action](#action)
+      - [Reducer](#reducer)
+      - [Store](#store)
+    - [数据流](#%e6%95%b0%e6%8d%ae%e6%b5%81)
+    - [Redux 中间件](#redux-%e4%b8%ad%e9%97%b4%e4%bb%b6)
+    - [问题](#%e9%97%ae%e9%a2%98)
+  - [React-Router](#react-router)
+    - [主要组件](#%e4%b8%bb%e8%a6%81%e7%bb%84%e4%bb%b6)
+    - [SSR](#ssr)
+    - [代码分割 code splitting](#%e4%bb%a3%e7%a0%81%e5%88%86%e5%89%b2-code-splitting)
+    - [ScrollToTop](#scrolltotop)
+    - [API](#api)
+    - [问题](#%e9%97%ae%e9%a2%98-1)
+  - [React](#react-1)
+    - [Fiber](#fiber)
+    - [React 事件处理系统](#react-%e4%ba%8b%e4%bb%b6%e5%a4%84%e7%90%86%e7%b3%bb%e7%bb%9f)
+    - [Reconciliation 协调(一致性比较)](#reconciliation-%e5%8d%8f%e8%b0%83%e4%b8%80%e8%87%b4%e6%80%a7%e6%af%94%e8%be%83)
+      - [Diff 算法](#diff-%e7%ae%97%e6%b3%95)
+    - [性能优化](#%e6%80%a7%e8%83%bd%e4%bc%98%e5%8c%96)
+    - [组件生命周期](#%e7%bb%84%e4%bb%b6%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f)
+      - [挂载](#%e6%8c%82%e8%bd%bd)
+      - [更新](#%e6%9b%b4%e6%96%b0)
+      - [卸载](#%e5%8d%b8%e8%bd%bd)
+      - [错误处理](#%e9%94%99%e8%af%af%e5%a4%84%e7%90%86)
+    - [问题](#%e9%97%ae%e9%a2%98-2)
+
 # React
 
 ## Redux
@@ -259,6 +288,59 @@ export deafult function ScrollToTop(){
 
 ## React
 
+### Fiber
+
+> Fiber 是一种数据结构，用于代表某些 worker，也就是一个 work 单元，通过 fiber 架构，提供一种跟踪、调度、暂停和终止工作的方式。
+
+Fiber 是一种重新设计的增量渲染的调度的堆栈幀，它的特性是时间分片和暂停（悬挂），它将可中断的任务拆分成多个子任务，按照优先级来自由调度子任务，分段更新，从而避免以前同步渲染引起的掉帧和卡顿现象。
+
+**Fiber nodes**
+
+当 react 第一次 render 的时候，react 元素第一次转换为 fiber node 的时候，react 使用 react.createElement 返回的数据创建 fiber node，随后的更新，react 将复用 fiber node,根据最新的 VirtualDOM 信息，生成一颗新的 fiber 树，这棵树每生成一个 fiber 节点，都会将控制权交回给主线程去查看有没有优先级更高的任务需要执行，如果没有，继续创建树的过程；如果有，就丢弃当前创建的树，在空闲的时候再创建一遍树。在构造 fiber 树的时候，将需要更新的节点信息（Placement、Deletion 等）存储在 Effect list 里面，在第二阶段的时候批量更新节点。
+
+fiber node 以链表的形式组成了 fiber node tree
+![fiber node tree](https://pic2.zhimg.com/80/v2-0ab001d3801fefcd634c9e0339b26545_1440w.jpg)
+
+1.  工作过程：
+    - render() 和 setState 的时候创建更新，
+    - 将创建的更新加入任务队列，等待调度
+    - 在 requestIdleCallback 空闲时执行任务
+    - 从跟节点开始遍历 Fiber Node，并且生成 workInProgress Tree
+    - 生成 effectList
+    - 根据 effectList 更新 DOM
+2.  如上主要分为两个阶段：
+    1.  render/reconciliation：生成 Fiber 树，得出需要更新的节点信息。这个过程是渐进的，可被中断。
+    2.  commit：将需要更新的节点一次性批量更新，这个过程不可被中断。(处理 effectlist（包括更新 dom 树、调用组件生命周期以及更新 ref 等内部状态)）
+
+注：
+react 调度器（Schedular）调度任务：
+
+- synchronous，与之前的 Stack Reconciler 操作一样，同步执行
+- task，在 next tick 之前执行
+- animation，下一帧之前执行
+- high，在不久的将来立即执行
+- low，稍微延迟执行也没关系
+- offscreen，下一次 render 时或 scroll 时才执行
+
+### React 事件处理系统
+
+> - 原生事件（阻止冒泡）**会阻止**合成事件的执行
+> - 合成事件（阻止冒泡）不会阻止原生事件执行
+
+1.  事件机制：减少内存消耗、提升性能、统一规范、兼容性。主要是对原生事件的封装、对原生事件的升级改造、对浏览器事件的兼容处理。
+2.  事件注册机制
+    - 事件注册（listenTo） - 组件挂载阶段，根据组件内声明的事件类型（onClick，onChange）给 document 添加事件（addEventListener）并指定统一的事件处理程序 dispatchEvent。
+    - 事件存储 - 把组件内所有事件回调 listener 统一存储在一个对象（listenerBank）里，缓存起来，以便触发事件时可以找到对应的方法去执行。
+3.  事件执行机制
+    - 进入统一的事件分发函数 dispatchEvent
+    - 结合原生事件找到当前节点的 ReactDOMComponent 对象
+    - 开始事件的合成
+      - 根据当前的事件类型生成指定的合成对象
+      - 封装原生事件和冒泡机制
+      - 查找当前元素及其父级
+      - 在 listenerBank 查找事件回调并合成到 event（合成事件结束）
+    - 批量处理合成事件内的回调函数。
+
 ### Reconciliation 协调(一致性比较)
 
 目标：
@@ -414,40 +496,7 @@ O(n)的启发式算法：
    - 保证内部（props，state）的一致性，（不能保证 props 是同步更新的，并且避免子组件重新渲染两次）
    - 满足未来的 concurrent 能力更新
 
-3. Fiber
-   Fiber 是一种重新设计的增量渲染的调度的堆栈幀，它的特性是时间分片和暂停（悬挂），它将可中断的任务拆分成多个子任务，按照优先级来自由调度子任务，分段更新，从而避免以前同步渲染引起的掉帧和卡顿现象。
-
-   1. 工作过程：
-      - render() 和 setState 的时候创建更新，
-      - 将创建的更新加入任务队列，等待调度
-      - 在 requestIdleCallback 空闲时执行任务
-      - 从跟节点开始遍历 Fiber Node，并且生成 workInProgress Tree
-      - 生成 effectList
-      - 根据 effectList 更新 DOM
-   2. 如上主要分为两个阶段：
-      1. render/reconciliation：生成 Fiber 树，得出需要更新的节点信息。这个过程是渐进的，可被中断。
-      2. commit：将需要更新的节点一次性批量更新，这个过程不可被中断。
-
-4. React 事件处理系统
-
-   > - 原生事件（阻止冒泡）**会阻止**合成事件的执行
-   > - 合成事件（阻止冒泡）不会阻止原生事件执行
-
-   1. 事件机制：减少内存消耗、提升性能、统一规范、兼容性。主要是对原生事件的封装、对原生事件的升级改造、对浏览器事件的兼容处理。
-   2. 事件注册机制
-      - 事件注册（listenTo） - 组件挂载阶段，根据组件内声明的事件类型（onClick，onChange）给 document 添加事件（addEventListener）并指定统一的事件处理程序 dispatchEvent。
-      - 事件存储 - 把组件内所有事件回调 listener 统一存储在一个对象（listenerBank）里，缓存起来，以便触发事件时可以找到对应的方法去执行。
-   3. 事件执行机制
-      - 进入统一的事件分发函数 dispatchEvent
-      - 结合原生事件找到当前节点的 ReactDOMComponent 对象
-      - 开始事件的合成
-        - 根据当前的事件类型生成指定的合成对象
-        - 封装原生事件和冒泡机制
-        - 查找当前元素及其父级
-        - 在 listenerBank 查找事件回调并合成到 event（合成事件结束）
-      - 批量处理合成事件内的回调函数。
-
-5. React/Vue key 的作用
+3. React/Vue key 的作用
    指定唯一的 key 存在是为了高效的更新 VDOM List，key 是用来判断 VDOM 元素项的唯一依据。
    - Vue 采用依赖收集的方式更细粒度的更新组件，简单无状态组件原地复用。
    - React 采用自顶向下的数据流，每次小的改动都会产生全新的 vdom。
