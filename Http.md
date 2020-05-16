@@ -207,6 +207,61 @@ DNS 查询的两种方式：
 1、递归查询
 2、迭代查询
 
+## XMLHttpRequest
+
+FormData 与表单提交的区别：
+
+- FormData 不仅能读取表单数据，也能自行追加数据
+- FormData 允许上传多个文件流
+- FormData 相同键不会被覆盖，表单提交相同键会被覆盖
+- 原始表单提交，contentType 默认为 application/x-www-urlencoded,表单数据为键值对，用&分割。
+- FormData，contentType 一般为 multipart/form-data，允许二进制流（boundry 空行隔开），也可提交键值对数据。
+- FormData 用 append 添加数据。
+
+```
+const xhr = new XMLHttpRequest()
+xhr.timeout = '3000' // 设置超时时间
+xhr.responseType = 'json' // 返回类型
+xhr.open('POST', URL, asyncBool = true) // 默认异步发送
+/**
+ * 同步请求 asyncBool=false
+ * 必须满足：
+ * xhr.timeout = 0
+ * xhr.withCredentials = false
+ * xhr.responseType = ''
+ */
+// 设置header，必须在open之后，send之前
+xhr.setRequestHeader('Content-Type', 'application/json')
+
+// 相应回调函数
+xhr.ontimeout = e => { }
+xhr.onerror = e = {}
+xhr.onloadstart = e = {}
+xhr.onloadend = e => { }
+xhr.upload.onprogress = e => {
+  if(e.lengthComputed) let percent = e.loaded / e.total
+ } // 上传
+xhr.onprogress = e = {} // 下载
+
+xhr.onreadystatechange = e => {
+  // xhr.readyState
+}
+xhr.onload = e => {
+  if(e.status === 200){}
+}
+
+
+xhr.send(data) // 发送数据
+```
+
+| xhr.readyState |              状态              | 描述                                                       |
+| :------------: | :----------------------------: | ---------------------------------------------------------- |
+|       0        |    UNSENT(初始状态，未打开)    | xhr 对象成功构建，open()方法还未调用                       |
+|       1        |     OPENED(已打开，未发送)     | open()方法已调用，send()方法未调用                         |
+|       2        | HEADERS_RECEIVED(已获取响应头) | send()方法已调用，响应头和响应状态已返回                   |
+|       3        |    LOADING(正在下载响应体)     | response entity body 正在下载，xhr.response 可能有响应数据 |
+|       4        |     DONE(整个传输过程结束)     | 传输过程结束，不管成功还是失败                             |
+
 ## 问题
 
 1. 【问题 1】为什么连接的时候是三次握手，关闭的时候却是四次握手？
