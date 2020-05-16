@@ -6,6 +6,8 @@
 > 程序中设置两个线程，一个负责程序本身的运行，叫做主线程；另一个负责主线程与其他线程（主要是 IO 操作）的通信，称为 EventLoop 线程（消息线程）。
 > 主线程开始运行，每当遇到 IO 操作，主线程就让 EventLoop 线程通知相应的 IO 程序，主线程接着往后运行，当 IO 完成之后，EventLoop 线程再把结果返回主线程。主线程调用事先设定的回调函数，完成任务。
 
+![事件循环与帧](https://segmentfault.com/img/bVbswCi?w=924&h=436)
+
 #### 任务队列
 
 1. 所有同步任务都在主线程上运行，形成一个执行栈（execution context stack）
@@ -684,10 +686,95 @@ Function.__proto__ === Function.prototype	// true
    ```
 
 10. 模拟 promise.race
+
     ```
     Promise.prototype._race = promises => new Promise((resolve, reject) => {
       promises.forEach(item => {
         Promise.resolve(item).then(resolve, reject)
       })
     })
+    ```
+
+11. 链式调用
+    ```
+    class LazyManClass {
+      constructor(name) {
+        this.name = name
+        console.log(`My name is ${name}`)
+        this.queue = []
+        setTimeout(() => this.next(), 0)
+      }
+      eat(food) {
+        const fn = () => {
+          console.log(`I am eating ${food}`)
+          this.next()
+        }
+        this.queue.push(fn)
+        return this
+      }
+      sleepFirst(time) {
+        const fn = () => {
+          setTimeout(() => {
+            console.log(`Wait first for ${time}ms`)
+            this.next()
+          }, time)
+        }
+        this.queue.unshift(fn)
+        retur this
+      }
+      sleep(time) {
+        const fn = () => {
+          setTimeout(() => {
+            console.log(`wait for ${time}ms`)
+            this.next()
+          }, time)
+        }
+        this.queue.push(fn)
+        return this
+      }
+      next() {
+        const fn = this.queue.shift()
+        fn && fn()
+      }
+    }
+    function lazyMan(name) {
+      return new LazyManClass(name)
+    }
+    lazyMan('Tom').eat('eggs').sleepFirst(1000).eat('apple').sleep(2000).eat('junk food')
+    ```
+12. setTimeout 实现 setInterval
+    ```
+    function mySetInterval() {
+      mySetInterval.timer = setTimeout(() => {
+        arguments[0]()
+        mySetInterval(...arguments)
+      }, arguments[1])
+      mySetInterval.clear = function () {
+        clearTimeout(mySetInterval.timer)
+      }
+    }
+    ```
+13. 实现 multiRequest
+    ```
+    function multiRequest(urls, maxNum, callback) {
+      let urlCount = urls.length;
+      let requestQueue = [];
+      let result = [];
+      let currentIndex = 0;
+      const handleRequest = (url) => {
+        const req = fetch(url).then(res => {
+          const len = result.push(res)
+          if (len < urlCount && currentIndex + 1 < urlCount) {
+            requestQueue.shift()
+            handleRequest(urls[++i])
+          } else if (len === urlCount) {
+            typeof callback === 'function' && callback(result)
+          }
+        }).catch(e => result.push(e))
+        if (requestQueue.push(req) < maxNum) {
+          handleRequest(urls[++i])
+        }
+      };
+      handleRequest(urls[i])
+    }
     ```
