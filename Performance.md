@@ -175,18 +175,27 @@ plugin:
 
 ### Webpack
 
-流程：
+**具体流程**
 
-1. 识别入口文件
-2. 通过逐层识别模块依赖
-3. 分析代码，转换代码，编译代码，输出代码
-4. 生成代码
+1. 初始化参数：从配置文件和 Shell 语句汇总读取与合并参数，得出最终的参数
+2. 开始编译：用上一步得到的参数初始化 Compiler 对象，加载所有配置的插件，通过执行对象的 run 方法开始执行编译。
+3. 确定入口：根据配置文件的 entry 找出左右入口文件
+4. 编译模块：从入口文件出发，调用所有配置的 Loader 对模块进行翻译，再找出该模块依赖的模块，再递归本步骤直到所有入口依赖的文件都经历了本步骤的处理。
+5. 完成模块编译：在经过第 4 步使用 Loader 翻译完所有模块后，得到了每个模块被翻译后的最终内容及它们之间的依赖关系。
+6. 输出资源：根据入口和模块之间的依赖关系，组装成一个个包含多个模块的 Chunk，再将每个 Chunk 转换成一个单独的文件加入输出列表中，这是可以修改输出内容的最后机会。
+7. 输出完成：再确定好输出内容后，根据配置文件确定输出的路径和文件名，将文件的内容写入文件系统中。
+
+在以上过程中，Webpack 会在特定的时间点广播特定的事件，插件在监听到对应的事件后执行特定的逻辑，并且插件可以调用 webpack 提供的 api 改变 webpack 的运行结果。
+
+1. 初始化： 启动构建，读取与合并配置参数，加载 plugin，实例化 Compiler
+2. 编译：从 Entry 出发，针对每个 Module 串行调用对应的 Loader 去翻译文件的内容，再找出 Module 依赖的 Module，递归地进行编译处理。
+3. 输出：在编译后的 Module 组合成 Chunk，将 Chunk 转换成文件，输出到文件系统中。
 
 **loader 🆚 plugin**
 **loader：**
 
-1. loader 本质上是一个函数，是一个文件加载器，能够加载文件资源，并进行处理
-2. loader 转换指定类型的模块
+4. loader 本质上是一个函数，是一个文件加载器，能够加载文件资源，并进行处理
+5. loader 转换指定类型的模块
 
 **plugin：**
 
@@ -205,3 +214,188 @@ plugin:
 6. HotModuleReplacement.Runtime 热模块更新运行时根据上一步骤传递的新模块 hash 值，通过 JsonpMainTemplate.Runtime 运行时以 Ajax 形式向服务端请求所有要更新的模块的 hash 列表，然后通过 jsonp 形式请求所有的模块代码。
 7. HotModulePlugin 对新旧模块进行对比，决定是否更新模块，更新之前，会检查依赖关系并且更新模块间的依赖引用。
 8. 当 HMR 失败，将回退到 live reload 阶段刷新浏览器获取最新打包代码。
+
+#### webpack 优化
+
+1. 优化开发体验
+   1. 优化构建速度
+      - 缩小文件的搜索范围
+        1. 优化 Loader 配置
+           - `test: /\.js$/`优化正则表达式性能
+           - `use:['babel-loader?cacheDirectory']`开启转换结果的缓存
+           - `include: path.resolve(__dirname, 'src')`只针对 src 目录下文件
+        2. 优化 resolve.modules 配置
+           ```
+           resolve: {
+             // 使用绝对路径指明第三方模块存放位置
+             // 减少搜索步骤
+             modules: [path.resolve(__dirname, 'node_modules')]
+           }
+           ```
+        3. 优化 resolve.mainFields 配置
+           ```
+           resolve: {
+             // 明确指明第三方模块的入口文件描述字段，以减少搜索步骤
+             mainFields: ['main']
+           }
+           ```
+        4. 优化 resolve.alias 配置
+           ```
+           resolve: {
+             alias: {
+               // 使用alias将导入react的语句换成直接使用单独、完整的react.min.js文件
+               // 减少耗时的递归解析操作
+               // 适用于整体性比较强的库
+               // 不适合tree-shaking
+               'react': path.resolve(__dirname, './node_modules/react/dist/react.min.js')
+             }
+           }
+           ```
+        5. 优化 resolve.extensions 配置
+           ```
+           extensions: ['js', 'json']
+           // 尽可能减少后缀尝试的可能性
+           ```
+        6. 优化 module.noParse 配置
+           ```
+           module: {
+             // 单独完整的react.min.js文件没有采用模块化，忽略对这个文件的递归解析处理
+             noParse: [/react\.min\.js$]
+           }
+           ```
+      - 使用 DLLPlugin
+        打包复用动态链接库
+        DLLPlugin：用于高打包出一个个单独的动态链接库文件
+        DLLReferencePlugin：用于在主要的配置文件中引入 DLLPlugin 插件打包好的动态链接库文件
+        1. 构建动态链接库文件
+        ```
+        // webpack.dll.config.js
+        const DllPlugin = require('webpack/lib/DllPlugin')
+        module.exports = {
+         entry:{
+           // react相关的模块放置在一个单独的动态链接库中
+           react: ['react','react-dom'],
+           // polyfill单独放置在一个动态链接库中
+           polyfill: ['core-js/fn/object/assign', 'core-js/fn/promise', 'whatwg-fetch']
+         },
+         output: {
+           filename: '[name].dll.js',
+           path: path.resolve(__dirname, 'dist'),
+           library: '_dll_[name] // 防止全局变量冲突
+         },
+         plugins: [
+           new DllPlugin({
+             name: '_dll_[name]',
+             path: path.join(__dirname, 'dist', '[name].manifest.json')
+           })
+         ]
+        }
+        ```
+        1. 使用动态链接库文件
+        ```
+        // webpack.config.js
+        const DllReferencePlugin = require('webpack/lib/DllReferencePlugin')
+        ...
+        plugins: [
+          new DllReferencePlugin({
+            manifest: require('./dist/react.manifest.json')
+          }),
+          new DllReferencePlugin({
+            manifest: require('./dist/polyfill.manifest.json')
+          }),
+        ]
+        ```
+        1. 执行构建
+           1. 如果动态链接库相关的文件还没有编译出来，就需要先将它们编译出来。 `webpack --config webpack.dll.config.js`
+           2. 在确保动态链接库存在时，才能正常编译入口执行文件。
+      - 使用 HappyPack
+        接入：
+        ```
+        const happyThreadPool = Happypack.ThreadPool({size: 5})
+        // 构建共享进程池，在进程池中包含5个子进程
+        module: {
+          rules:[
+            {
+              test: /.js$/,
+              use: ['happypack/loader?id=babel']
+            },
+            {
+              test: /.css$/,
+              use: ExtractTextPlugin.extract({
+                use: ['happypack/loader?id=css']
+              })
+            }
+          ]
+        },
+        plugins: [
+          new HappyPack({
+            id: 'babel',
+            loaders: ['babel-loader?cacheDirectory'],
+            // 使用共享进程池中的子进程去处理任务
+            threadPool: happyThreadPool,
+          }),
+          new HappyPack({
+            id: 'css',
+            loaders: ['css-loader'],
+            // 使用共享进程池中的子进程去处理任务
+            threadPool: happyThreadPool,
+          })
+        ]
+        ```
+        原理：HappyPack 将这部分耗时的 loader 处理任务分解成多个子进程去并行处理，从而减少总的构建时间。
+      - 使用 ParallelUglifyPlugin
+        开启多个子进程，将对多个文件的压缩工作分配给多个子进程完成。
+        ```
+        const ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin')
+        ...
+        plugins: [
+          new ParallelUglifyPlugin({
+            uglifyJS: {
+              output: {
+                beautify: false,//紧凑输出
+                comments: false,//删除注释
+              },
+              compress: {
+                warnings: false,//删除没有用到的代码时不输出警告
+                drop_console: true,//删除console
+                collapse_vars: true,//内嵌已定义但只用到一次的变量
+                reduce_vars: true//提取出现多次但未被定义变量的引用静态值
+              }
+            }
+          })
+        ]
+        ```
+   2. 优化使用体验
+      1. 使用自动刷新
+         - 文件监听
+           ```
+           module.export = {
+             watch: true,
+             watchOptions: {
+               ignored: /node_modules/, //不监听的文件
+               aggregateTimeout: 300,//截流，文件变化300ms后再去执行
+               poll: 1000 // 默认美妙询问1000次
+             }
+           }
+           ```
+         - 自动刷新浏览器
+           `webpack-dev-server --inline false`
+         - 开启热模块更新
+           `devServer.hot: true`
+2. 优化输出质量
+   1. 减少用户能感知到的加载时间，也就是首屏加载时间
+      - 区分环境
+      - 压缩代码
+      - CDN 加速
+      - Tree Shaking
+      - 提取公共代码
+      - 代码分割按需加载
+   2. 提升流畅度，也就是提升代码性能
+      - 使用 Prepack
+        在保持运行结果一致的情况下，改变源代码的运行逻辑，输出性能更好的 js 代码。实际上 prepack 是一个部分求值器，编译代码时提前将计算结果放到编译后的代码中，而不是在代码运行时采取求值。
+      - 使用 Scope Hoisting
+        作用域提升，让 webpack 打包出来的代码文件更小，运行更快，`plugins:[new ModuleConcatenationPlugin()]`
+3. 输出分析，分析问题所在
+   1. `webpack --profile`记录构建过程中的耗时信息
+   2. `webpack --json`以 json 的格式输出构建结果。
+   3. `webpack-bundle-analyzer`
