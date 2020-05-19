@@ -1,3 +1,7 @@
+- [Vue 3.0](#vue-30)
+  - [MVVM](#mvvm)
+- [问题](#%e9%97%ae%e9%a2%98)
+
 ## Vue 3.0
 
 1. 特性
@@ -172,3 +176,25 @@ Proxy
      - v-show 会生成 vnode 节点，render 的时候也会渲染成真实节点，但是在 render 的过程中会在节点的属性中修改 show 属性值，对应的是 display
    - v-html
      - 先移除节点下的所有节点，调用 html 方法，通过 addProp 添加 innerHTML 属性，对应于 innerHTML
+6. 自定义 v-model - 自组件定义相同的 model 和 props
+   ```
+   // App.vue
+   <p>{{name}}</p>
+   <child-comp v-model="name">
+   // ChildComp.vue
+   <input type='text' :value="text" @input="$emit('change', $event.target.value)" />
+   export default {
+      model: {
+         prop: 'text',
+         event: 'change',
+      },
+      props: {
+         text:{
+            type: String,
+            defaultValue() {
+               return ''
+            }
+         }
+      }
+   }
+   ```
