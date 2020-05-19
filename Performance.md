@@ -1,3 +1,11 @@
+- [Performance](#performance)
+  - [性能优化](#%e6%80%a7%e8%83%bd%e4%bc%98%e5%8c%96)
+- [工程化](#%e5%b7%a5%e7%a8%8b%e5%8c%96)
+    - [AST](#ast)
+    - [Webpack](#webpack)
+      - [Webpack HMR 原理](#webpack-hmr-%e5%8e%9f%e7%90%86)
+      - [webpack 优化](#webpack-%e4%bc%98%e5%8c%96)
+
 # Performance
 
 保持前端的可用性、稳定性（加载过慢，交互卡顿延迟）等性能问题

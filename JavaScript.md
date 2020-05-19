@@ -1,3 +1,30 @@
+- [JavaScript](#javascript)
+  - [EventLoop](#eventloop)
+    - [任务队列](#%e4%bb%bb%e5%8a%a1%e9%98%9f%e5%88%97)
+    - [Event Loop](#event-loop)
+      - [宏任务 macrotask](#%e5%ae%8f%e4%bb%bb%e5%8a%a1-macrotask)
+      - [微任务 microtask](#%e5%be%ae%e4%bb%bb%e5%8a%a1-microtask)
+      - [执行顺序](#%e6%89%a7%e8%a1%8c%e9%a1%ba%e5%ba%8f)
+  - [垃圾回收 GC](#%e5%9e%83%e5%9c%be%e5%9b%9e%e6%94%b6-gc)
+  - [内存泄漏](#%e5%86%85%e5%ad%98%e6%b3%84%e6%bc%8f)
+  - [调用堆栈](#%e8%b0%83%e7%94%a8%e5%a0%86%e6%a0%88)
+    - [执行上下文创建](#%e6%89%a7%e8%a1%8c%e4%b8%8a%e4%b8%8b%e6%96%87%e5%88%9b%e5%bb%ba)
+  - [作用域与闭包](#%e4%bd%9c%e7%94%a8%e5%9f%9f%e4%b8%8e%e9%97%ad%e5%8c%85)
+    - [闭包](#%e9%97%ad%e5%8c%85)
+    - [作用域链](#%e4%bd%9c%e7%94%a8%e5%9f%9f%e9%93%be)
+  - [this](#this)
+    - [this 绑定规则](#this-%e7%bb%91%e5%ae%9a%e8%a7%84%e5%88%99)
+    - [call apply bind new](#call-apply-bind-new)
+  - [节流防抖](#%e8%8a%82%e6%b5%81%e9%98%b2%e6%8a%96)
+    - [深浅拷贝](#%e6%b7%b1%e6%b5%85%e6%8b%b7%e8%b4%9d)
+      - [浅拷贝](#%e6%b5%85%e6%8b%b7%e8%b4%9d)
+      - [深拷贝](#%e6%b7%b1%e6%8b%b7%e8%b4%9d)
+  - [原型](#%e5%8e%9f%e5%9e%8b)
+    - [原型链](#%e5%8e%9f%e5%9e%8b%e9%93%be)
+  - [继承](#%e7%bb%a7%e6%89%bf)
+  - [模块化](#%e6%a8%a1%e5%9d%97%e5%8c%96)
+  - [问题：](#%e9%97%ae%e9%a2%98)
+
 ## JavaScript
 
 ### EventLoop
@@ -776,5 +803,18 @@ Function.__proto__ === Function.prototype	// true
         }
       };
       handleRequest(urls[i])
+    }
+    ```
+14. 实现 once 函数
+    ```
+    function once(func) {
+      let flag = true
+      return function() {
+        if(flag) {
+          func.apply(this, arguments)
+          flag = false
+        }
+        return undefined
+      }
     }
     ```

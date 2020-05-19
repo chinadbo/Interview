@@ -1,4 +1,29 @@
+- [HTML](#html)
+  - [重绘和回流](#%e9%87%8d%e7%bb%98%e5%92%8c%e5%9b%9e%e6%b5%81)
+    - [浏览器渲染机制 - 流式布局模型](#%e6%b5%8f%e8%a7%88%e5%99%a8%e6%b8%b2%e6%9f%93%e6%9c%ba%e5%88%b6---%e6%b5%81%e5%bc%8f%e5%b8%83%e5%b1%80%e6%a8%a1%e5%9e%8b)
+    - [浏览器缓存机制](#%e6%b5%8f%e8%a7%88%e5%99%a8%e7%bc%93%e5%ad%98%e6%9c%ba%e5%88%b6)
+- [CSS](#css)
+- [兼容性](#%e5%85%bc%e5%ae%b9%e6%80%a7)
+
 ## HTML
+
+iframe：
+缺陷：
+
+1. 会阻塞主页面的 onload 事件
+2. 搜索引擎无法解读 iframe，不利于 SEO
+3. iframe 和主页面共享连接池，会影响性能
+
+HTML5
+
+1. 语义化标签 header footer nav section article aside audio video canvas
+2. 表单 input - color data range
+3. 存储 - localStorage sessionStorage IndexDB
+4. geolocation web-worker
+
+异步脚本加载 defer 🆚 async
+defer：按顺序加载，加载完执行，执行完出发 DOMContentLoaded 事件
+async：不按顺序加载，加载完立即执行，出发 DOMContentLoaded 事件时机不定。
 
 ### 重绘和回流
 
@@ -44,31 +69,35 @@ cache-control:
 
 ## CSS
 
-1. 伪类 - 向某些选择器添加特殊的效果
+1. 新增 CSS3 属性
+   - border-radius border-image box-shadow text-shadow
+   - background-size background-origin
+   - transfrom animation
+2. 伪类 - 向某些选择器添加特殊的效果
    - `:link`
    - `:visited`
    - `:hover`
    - `:active`
    - `:first-child` `:last-child`
-2. 伪元素 - html 中不存在的元素
+3. 伪元素 - html 中不存在的元素
    - `::before`
    - `::after`
    - `::first-line`
    - `::first-letter`
    - `::section`
-3. `display: none`, `visibility: hidden`, `opacity: 0`
+4. `display: none`, `visibility: hidden`, `opacity: 0`
    - display: none (不占空间，不能点击)（场景，显示出原来这里不存在的结构）- 回流操作
    - visibility: hidden（占据空间，不能点击）（场景：显示不会导致页面结构发生变动，不会撑开）- 重绘操作 - 子孙节点可显示
    - opacity: 0（占据空间，可以点击）（场景：可以跟 transition 搭配）- 重绘操作
-4. `<img src="1.jpg" style="width:480px!important;”>`让图片宽度为 300px
+5. `<img src="1.jpg" style="width:480px!important;”>`让图片宽度为 300px
    - `max-width: 300px`
    - `transfrom: scale(0.625)`
    - `box-sizing: border-box;padding: 90px`
    - `@keyframes test{ from {width:300px} to {width: 300px}}`
-5. 1px
+6. 1px
    - 伪元素 + transform scaleY(0.5)
    - `box-shadow: inset 0px -1px 1px -1px #d4d6d7`
-6. 文本溢出
+7. 文本溢出
    - 单行
      ```
      width: 100px;
@@ -84,7 +113,7 @@ cache-control:
      overflow: hidden;
      text-overflow: ellipsis;
      ```
-7. flex: flex-group flex-shrink flex-basis
+8. flex: flex-group flex-shrink flex-basis
 
    ```
    <div class="container">
@@ -168,10 +197,13 @@ document.body.scrollTop;
 - 伪元素 `.clearfix::after{clear: both}`
 - 父元素 `.parent{overflow: auto}`
 
-8. a 标签效果顺序
+8. 盒子模型
+   - IE 盒子模型 box-sizing：border-box; width = content + border + padding
+   - 标准盒子模型 box-sizing：content-box
+9. a 标签效果顺序
    link - visited - hover - active
-9. BFC 块级格式化上下文
-   触发条件：
+10. BFC 块级格式化上下文
+    触发条件：
 
 - body 根元素
 - 浮动元素：float 除 none 以外的值
@@ -264,7 +296,3 @@ body{
     `<meta name="apple-mobile-web-app-capable" content="yes">`
 19. 设置缓存
     `<meta http-equiv="Cache-Control" content="no-cache">`
-
-```
-
-```

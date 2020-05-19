@@ -1,3 +1,19 @@
+- [HTTP 核心问题](#http-%e6%a0%b8%e5%bf%83%e9%97%ae%e9%a2%98)
+  - [HTTP 版本](#http-%e7%89%88%e6%9c%ac)
+  - [HTTP-CODE](#http-code)
+  - [HTTP header](#http-header)
+  - [HTTP method](#http-method)
+  - [HTTP 请求/响应报文](#http-%e8%af%b7%e6%b1%82%e5%93%8d%e5%ba%94%e6%8a%a5%e6%96%87)
+  - [HTTPS](#https)
+  - [TCP](#tcp)
+    - [TCP 三次握手](#tcp-%e4%b8%89%e6%ac%a1%e6%8f%a1%e6%89%8b)
+    - [TCP 四次挥手](#tcp-%e5%9b%9b%e6%ac%a1%e6%8c%a5%e6%89%8b)
+    - [TLS 握手](#tls-%e6%8f%a1%e6%89%8b)
+    - [websocket 握手](#websocket-%e6%8f%a1%e6%89%8b)
+    - [DNS](#dns)
+  - [XMLHttpRequest](#xmlhttprequest)
+  - [问题](#%e9%97%ae%e9%a2%98)
+
 # HTTP 核心问题
 
 > 超文本传输协议（HyperText Transfer Protocol），应用层协议，无状态。
@@ -69,10 +85,10 @@
 
 4. 4XX 客户端错误
 
-   - **400("Bad Request")**
-   - **401("Unauthorized")**
+   - **400("Bad Request")** 请求无效，前端提交字段与后端实体不一致
+   - **401("Unauthorized")** 未授权
    - 402("Payment Required")
-   - **403("Forbidden")**
+   - **403("Forbidden")** 服务收到请求，但拒绝执行
    - **404("Not Found")**
    - **405("Method Not Allowd")**
    - 406("Not Acceptable")
@@ -109,7 +125,7 @@
    - 产生一个 TCP 数据包，header 和 data 一起发送服务器，然后返回数据
    - 安全幂等可缓存
    - 浏览器历史记录、可被缓存、可加书签
-   - 大小限制
+   - 大小限制（浏览器和服务器做的限制）
 6. post
    - 产生两个数据包，client 先发送 header，服务器响应 100('continue'),client 发送 data，然后服务器响应。
    - 不安全不幂等
@@ -151,7 +167,16 @@ TLS 由记录协议、握手协议、警告协议、变更密码规范协议、�
    **ECDHE-RSA-AES256-GCM-SHA384**
    “握手时使用 ECDHE 算法进行密钥交换，用 RSA 签名和身份认证，握手后的通信使用 AES 对称算法，密钥长度 256 位，分组模式是 GCM，摘要算法 SHA384 用于消息认证和产生随机数。”
 
-## TCP 三次握手
+## TCP
+
+TCP 🆚 UDP
+
+1.  TCP 是面向连接的可靠性传输，UDP 是不可靠的、发送消息之前不需要建立连接
+2.  TCP 面向字节流，UDP 面向报文
+3.  TCP 首部较大约 20 字节，UDP 为 8 字节
+4.  TCP 只能是 1 对 1，UDP 可 1 对 n
+
+### TCP 三次握手
 
 > 在实际的通信中，
 > 序号并不是从 1 开始的，而是需要用随机数计算出一个初始值，这是因为
@@ -165,7 +190,7 @@ TLS 由记录协议、握手协议、警告协议、变更密码规范协议、�
 2. Server 发送序列号 SYN（seq=y）和确认号 ACK（ack number2 = x + 1）到客户端；
 3. Client 发送确认号 ACK（ack number3=y+1）到 Server；
 
-## TCP 四次挥手
+### TCP 四次挥手
 
 ![](./assets/tcp-4-fin.png)
 具体过程：
@@ -175,7 +200,7 @@ TLS 由记录协议、握手协议、警告协议、变更密码规范协议、�
 3. Server 释放连接信号 FIN（seq=w）和确认号 ACK（ack=u+1）到 Client；
 4. Client 发送确认号（ack=w+1 和 seq=u+1）到 Server；
 
-## TLS 握手
+### TLS 握手
 
 TLS 握手过程成会完成以下：
 
@@ -194,12 +219,22 @@ TLS 握手过程成会完成以下：
    - server finished 消息（密钥加密）
 5. 握手完成，后续数据经过主密钥加解密。
 
-## websocket 握手
+### websocket 握手
 
 WebSocket 协议实现起来相对简单。它使用 HTTP 协议进行初始握手。成功握手之后，就建立了连接，WebSocket 基本上使用原始 TCP 读取/写入数据。
 ![](./assets/websocket-handshake.jpeg)
 
-## DNS
+```
+GET /chat http/1.1
+Host: www.example.com
+Upgrade: websocket // 1
+connection: Upgrade // 2 1和2 升级为websocket协议
+Sec-WebSocket-Key: x3JJHMbDL1EzLkh9GBhXDw==
+Sec-WebSocket-Protocol: chat, superchat
+Sec-WebSocket-Version: 13
+```
+
+### DNS
 
 DNS（Domain Name System，域名系统），因特网上作为域名和 IP 地址相互映射的一个分布式数据库，能够使用户更方便的访问互联网，而不用去记住能够被机器直接读取的 IP 数串。通过主机名，最终得到该主机名对应的 IP 地址的过程叫做域名解析（或主机名解析）。
 
@@ -329,7 +364,14 @@ TCP 还设有一个保活计时器，显然，客户端如果出现故障，服�
    1. http header 验证 referer 字段或者自定义属性验证
    2. 表单添加随机值 token
 
-8. 输入 URL 的过程
+8. XSS
+   跨站脚本攻击
+
+   1. cookie 设置 http-only（防止 js 获取 cookie）和 secure（只能 https 携带）
+   2. 对用户输入转译
+
+9. 输入 URL 的过程
+
    1. 输入 URL，查找缓存
    2. DNS 查询
    3. 建立 TCP 连接
@@ -337,3 +379,15 @@ TCP 还设有一个保活计时器，显然，客户端如果出现故障，服�
    5. Server 处理请求
    6. Server 响应请求
    7. 浏览器解析、render page
+
+10. 一个图片 url 访问后直接下载怎样实现？
+    修改响应头的 oss 属性
+
+    ```
+    x-oss-object-type: Normal
+    x-oss-request-id: 598D5ED34F29D01FE2925F41
+    x-oss-storage-class: Standard
+    ```
+
+11. fetch 条 post 请求的时候，总是发送两次请求，第一次返回 204
+    fetch 第一次发送了 options 请求，询问服务器是否支持请求头，如果支持第二次发送请求。
