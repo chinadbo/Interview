@@ -223,13 +223,16 @@ FunctionExectionContext = {
 2. apply
 
    ```
-   Function.prototype.myApply = function(context, arr) {
+   Function.prototype.myApply = function(context) {
      context = context ? Object(context) : window
      context.fn = this
 
      let result
-     if(!arr) { result = context.fn() }
-     else { result = context.fn(...arr)}
+     if(arguments[1]) {
+       result = context.fn(...arguments[1])
+      }else {
+        result = context.fn()
+      }
 
      delete context.fn
      return result
@@ -244,10 +247,18 @@ FunctionExectionContext = {
      if(typeof self !== 'function') {
        throw new TypeError('bind should be function')
      }
+     return function F() {
+       if(this instanceof F) {
+         return new self(...args, ...arguments)
+       }
+       return self.apply(context, [...args, ...arguments])
+     }
+     /**
      return function () {
        const bindArgs = Array.prototype.slice.call(arguments)
        return self.apply(context, args.concat(bindArgs))
      }
+     */
    }
    ```
 4. new
