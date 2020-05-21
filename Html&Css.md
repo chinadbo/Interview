@@ -89,15 +89,22 @@ cache-control:
    - display: none (不占空间，不能点击)（场景，显示出原来这里不存在的结构）- 回流操作
    - visibility: hidden（占据空间，不能点击）（场景：显示不会导致页面结构发生变动，不会撑开）- 重绘操作 - 子孙节点可显示
    - opacity: 0（占据空间，可以点击）（场景：可以跟 transition 搭配）- 重绘操作
-5. `<img src="1.jpg" style="width:480px!important;”>`让图片宽度为 300px
+5. animation
+   ```
+   @keyframes myMove {
+     from{}to{}
+   }
+   div{animation: myMove 5s infinite}
+   ```
+6. `<img src="1.jpg" style="width:480px!important;”>`让图片宽度为 300px
    - `max-width: 300px`
    - `transfrom: scale(0.625)`
    - `box-sizing: border-box;padding: 90px`
    - `@keyframes test{ from {width:300px} to {width: 300px}}`
-6. 1px
+7. 1px
    - 伪元素 + transform scaleY(0.5)
    - `box-shadow: inset 0px -1px 1px -1px #d4d6d7`
-7. 文本溢出
+8. 文本溢出
    - 单行
      ```
      width: 100px;
@@ -113,34 +120,34 @@ cache-control:
      overflow: hidden;
      text-overflow: ellipsis;
      ```
-8. flex: flex-group flex-shrink flex-basis
+9. flex: flex-group flex-shrink flex-basis
 
-   ```
-   <div class="container">
-    <div class="left"></div>
-    <div class="right"></div>
-   </div>
-   .container {
-    width: 600px;
-    display: flex;
-   }
-   .left1 {
-    flex: 1 2 500px;
-    // left1 = 500 - (500+400-600)*(500*2/(500*2+400*1))
-   }
-   .right1 {
-    flex: 2 1 400px;
-   }
-   //
-   .left2{
-     flex: 1 2 300px;
-     // left2 = 300 + (600 - 300 - 200) * (1/(1+2))
-   }
-   .right2{
-     flex: 2 1 200px;
-   }
+```
+<div class="container">
+ <div class="left"></div>
+ <div class="right"></div>
+</div>
+.container {
+ width: 600px;
+ display: flex;
+}
+.left1 {
+ flex: 1 2 500px;
+ // left1 = 500 - (500+400-600)*(500*2/(500*2+400*1))
+}
+.right1 {
+ flex: 2 1 400px;
+}
+//
+.left2{
+  flex: 1 2 300px;
+  // left2 = 300 + (600 - 300 - 200) * (1/(1+2))
+}
+.right2{
+  flex: 2 1 200px;
+}
 
-   ```
+```
 
 ## 兼容性
 
