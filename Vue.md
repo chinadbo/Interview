@@ -1,5 +1,6 @@
 - [Vue 3.0](#vue-30)
   - [MVVM](#mvvm)
+  - [vdom diff](#vdom-diff)
 - [问题](#%e9%97%ae%e9%a2%98)
 
 ## Vue 3.0
@@ -118,7 +119,8 @@ Object.defineProperty
     2. 修改数组的长度 `items.length = newLength`
        - `items.splice(newLength)`
     3. 监听数组需要遍历一遍数组挨个劫持，性能太差。其次 push 这种不改变原有索引的方法无法触发 setter，还需要再次遍历劫持。
-2.  每个属性都要遍历添加 Observer
+2.  深度递归监听属性，一次性计算量大
+3.  无法监听新增/删除属性
 
 Proxy
 
@@ -134,6 +136,10 @@ Proxy
    })
    ```
 2. Proxy 可以直接监听数组的变化
+
+### vdom diff
+
+`h() => vnode() => patch(patchVnode) diff => addVnodes removeVodes => updateChildren`
 
 ## 问题
 
@@ -198,3 +204,11 @@ Proxy
       }
    }
    ```
+7. 异步组件
+   ```
+   components: {
+      componentA: () => import('./component/A')
+   }
+   ```
+8. 动态组件 `<component :is="SOMECOMPONENT' />`
+9. 缓存组件 `<keep-alive><comp /></keep-alive>`
