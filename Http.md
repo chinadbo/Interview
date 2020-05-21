@@ -369,6 +369,7 @@ TCP 还设有一个保活计时器，显然，客户端如果出现故障，服�
 
    1. cookie 设置 http-only（防止 js 获取 cookie）和 secure（只能 https 携带）
    2. 对用户输入转译
+   3. 开启 CSP（content-security-policy）
 
 9. 输入 URL 的过程
 
