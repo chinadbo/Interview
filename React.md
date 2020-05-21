@@ -312,7 +312,7 @@ fiber node 以链表的形式组成了 fiber node tree
     1.  render/reconciliation：生成 Fiber 树，得出需要更新的节点信息。这个过程是渐进的，可被中断。
     2.  commit：将需要更新的节点一次性批量更新，这个过程不可被中断。(处理 effectlist（包括更新 dom 树、调用组件生命周期以及更新 ref 等内部状态)）
 
-注：
+注 1：
 react 调度器（Schedular）调度任务：
 
 - synchronous，与之前的 Stack Reconciler 操作一样，同步执行
@@ -321,6 +321,11 @@ react 调度器（Schedular）调度任务：
 - high，在不久的将来立即执行
 - low，稍微延迟执行也没关系
 - offscreen，下一次 render 时或 scroll 时才执行
+
+注 2:
+reconcileChildrenArray 函数在开始进行新旧子节点数组 reconcile 时，默认先按 index 顺序进行对比，由于 Fiber 节点本身没有设置向后指针，因此 React 目前没有采取两端同时对比的算法，也就是说每一个同层级别的兄弟 Fiber 节点只能指向下一个节点。因此在通常情况下，对比过程中 react 只会调用 updateSlot 将得到的新 Fiber 数据按其不同类型直接更新到旧 Fiber 的位置中。
+
+在按顺序对比中，如果使用 updateSlot 未发现 key 值不相等的情况，则进行将老节点替换成为新节点，第一轮遍历完成后，则判断如果是新节点已遍历完成，就将剩余的老节点批量删除，如果是老节点遍历完成仍有新节点剩余，则将新节点批量插入老节点末端，如果在第一轮遍历中发现 key 值不相等的情况，则直接跳出以上步骤，按照 key 值进行遍历更新，最后再删除没有被上述情况涉及的元素，由此可见在列表结构的组件中，添加 key 值是有助于提升 diff 算法效率的。
 
 ### React 事件处理系统
 
