@@ -5,6 +5,8 @@
     - [线程间通信](#%e7%ba%bf%e7%a8%8b%e9%97%b4%e9%80%9a%e4%bf%a1)
     - [浏览器进程](#%e6%b5%8f%e8%a7%88%e5%99%a8%e8%bf%9b%e7%a8%8b)
   - [跨域](#%e8%b7%a8%e5%9f%9f)
+  - [简单请求 🆚 复杂请求](#%e7%ae%80%e5%8d%95%e8%af%b7%e6%b1%82-%f0%9f%86%9a-%e5%a4%8d%e6%9d%82%e8%af%b7%e6%b1%82)
+- [事务](#%e4%ba%8b%e5%8a%a1)
 - [设计模式](#%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f)
   - [观察者模式 🆚 发布-订阅者模式](#%e8%a7%82%e5%af%9f%e8%80%85%e6%a8%a1%e5%bc%8f-%f0%9f%86%9a-%e5%8f%91%e5%b8%83-%e8%ae%a2%e9%98%85%e8%80%85%e6%a8%a1%e5%bc%8f)
 - [算法](#%e7%ae%97%e6%b3%95)
@@ -47,6 +49,24 @@
 
 **线程间共享** 堆地址空间，全局变量
 **线程独享** 栈，寄存器，程序计数器
+
+**线程状态：**
+
+1. 新创建 New
+2. 就绪状态 Runnable
+3. 运行状态 Running
+4. 阻塞状态 Blocked
+5. 死亡状态 Dead
+
+**进程调度**
+![进程调度](https://user-gold-cdn.xitu.io/2019/10/21/16deecc24dfd080c)
+
+1. 先到先得 FCFS
+2. 轮转
+3. 最短进程优先
+4. 最短剩余时间
+5. 最高响应比优先
+6. 反馈法
 
 #### 进程间通信
 
@@ -264,6 +284,34 @@
    ...
    socket.send('some value')
    ```
+
+### 简单请求 🆚 复杂请求
+
+**简单请求：**
+
+1. 请求方式为 HEAD、Get、Post
+2. http 头信息不超出一下内容：
+   1. Accept、Accept-Language、Content-Language、Last-Event-ID
+   2. Content-Type 包含：
+      1. application/x-www-form-urlencoded
+      2. multipart/form-data
+      3. text/plain
+
+**复杂请求**
+
+1. PUT 或 Delete 方法，Content-Type 为 Application/json
+2. CORS 请求，正式通信前，会增加一次预检请求 preflight
+
+## 事务
+
+> 事务是逻辑上的一组操作，要么都执行，要么都不执行。
+
+**事务的特性：**
+
+1. 原子性
+2. 一致性
+3. 隔离性
+4. 持久性
 
 ## 设计模式
 
@@ -584,6 +632,8 @@ function heapSort(nums) {
 ```
 
 ### 基本算法
+
+[剑指 OFFER](https://blog.csdn.net/weixin_42235173/article/details/90897252)
 
 1. 数组交集
 

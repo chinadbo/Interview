@@ -250,12 +250,33 @@ plugin:
 
 #### webpack 优化
 
+**总结：**
+
+1. 分析打包速度
+   - `webpack-bundle-analyzer`, `speed-measure-webpack-plugin`
+2. 优化开发体验
+   1. 优化构建速度
+      - 开启多进程打包 thread-loader，happypack
+      - 合理利用缓存 cache-loader，HardSourceWebpackPlugin
+      - 优化压缩时间 terser，terser 多进程，ParallelUglifyPlugin
+      - dll 动态库文件
+      - 缩小文件搜索范围
+        - 优化 loader 配置
+        - 优化 resolve.module，优化 resolve.mainFileds、resolve.alias、resolve.extensions、resolve.noParse
+   2. 优化使用体验
+      - 文件刷新，自动刷新，HMR
+3. 优化输出质量
+   1. 减少加载时间
+   2. 提升代码性能
+
+具体：
+
 1. 优化开发体验
    1. 优化构建速度
       - 缩小文件的搜索范围
         1. 优化 Loader 配置
            - `test: /\.js$/`优化正则表达式性能
-           - `use:['babel-loader?cacheDirectory']`开启转换结果的缓存
+           - `use:['babel-loader?cacheDirectory']`开启转换结果的缓存 / `cache-loader`
            - `include: path.resolve(__dirname, 'src')`只针对 src 目录下文件
         2. 优化 resolve.modules 配置
            ```
@@ -341,7 +362,7 @@ plugin:
         1. 执行构建
            1. 如果动态链接库相关的文件还没有编译出来，就需要先将它们编译出来。 `webpack --config webpack.dll.config.js`
            2. 在确保动态链接库存在时，才能正常编译入口执行文件。
-      - 使用 HappyPack
+      - 使用 HappyPack / thread-loader
         接入：
         ```
         const happyThreadPool = Happypack.ThreadPool({size: 5})
@@ -432,3 +453,4 @@ plugin:
    1. `webpack --profile`记录构建过程中的耗时信息
    2. `webpack --json`以 json 的格式输出构建结果。
    3. `webpack-bundle-analyzer`
+   4. `speed-measure-webpack-plugin`
