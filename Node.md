@@ -6,6 +6,7 @@
     - [process.nextTick 🆚 setImmediate](#processnexttick-%f0%9f%86%9a-setimmediate)
 - [进程 Process](#%e8%bf%9b%e7%a8%8b-process)
   - [Cluster](#cluster)
+- [Koa](#koa)
 
 ## NodeJS
 
@@ -24,7 +25,9 @@ node 程序运行中，此进程占用的所有内存称为**常驻内存**：
    - 将内存平均分为两块，使用空间叫 FROM，闲置空间叫 TO。
    - 将存活对象分配到 TO 空间，然后清除 FROM 空间
    - 调换 FROM 和 TO 空间，继续内存分配
-   - 多次存活的对象会晋升至老生代
+   - 新生代晋升老生代
+     - 多次存活的对象会晋升至老生代
+     - To 空间内存使用率超过 25%
 2. 老生代：
    - 标记清除 Mark-Sweep （会产生碎片）
    - 标记整理 Mark-Compact （整理连续内存）
@@ -142,5 +145,24 @@ if (cluster.isMaster) {
       res.writeHead(200)
       res.end('hello world')
    }).listen(3000)
+}
+```
+
+## Koa
+
+**compose：**
+
+```
+function compose(middlewares){
+   return function() {
+      return dispatch(0)
+      function dispatch(i) {
+         const fn = middlewares[i]
+         if(!fn) return
+         return fn(function next() {
+            return dispatch(i+1)
+         })
+      }
+   }
 }
 ```
