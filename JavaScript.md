@@ -1,4 +1,5 @@
 - [JavaScript](#javascript)
+  - [ES](#es)
   - [EventLoop](#eventloop)
     - [任务队列](#%e4%bb%bb%e5%8a%a1%e9%98%9f%e5%88%97)
     - [Event Loop](#event-loop)
@@ -26,6 +27,31 @@
   - [问题：](#%e9%97%ae%e9%a2%98)
 
 ## JavaScript
+
+### ES
+
+1. ES6
+   - let const class module
+   - arrow function， 函数参数默认值
+   - 模版字符串
+   - 赋值解构
+   - 剩余操作符
+   - promise generator
+2. ES7
+   - Array.prototype.includes
+   - 指数操作符 \*\*
+3. ES8
+   - async/await
+   - Object.values/Object.entries
+   - String padding
+   - Object.getOwnPropertyDescriptors
+4. ES9
+   - Promise.finally
+   - 异步迭代 for await of
+5. ES10
+   - JSON.stringify
+   - Array.prototype.flat
+   - BigInt
 
 ### EventLoop
 
@@ -70,6 +96,7 @@ process.nextTick > Promise > MutationObserver
 2. 执行当前 microtask 队列的所有任务
 3. UI render
 4. 浏览器只保证 requestAnimationFrame 在重绘之前执行，没有确定的时间，何时重绘由浏览器决定。
+5. requestIdleCallback 在重绘之后执行，并且是否有空执行要看浏览器的调度，如果一定要在某个时间内执行，调用 timeout 参数。
 
 示例 1:
 ![动画演示](./assets/browser-deom1-excute-animate.gif)
