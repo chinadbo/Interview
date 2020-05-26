@@ -104,6 +104,48 @@
    4. 定时器线程
    5. 网络请求线程
 
+**输入 URL 后发生：**
+
+1. 浏览器开启 Browser process 浏览器进程。
+2. 处理输入
+   1. UI thread UI 线程控制浏览器按钮及输入框
+   2. UI thread 判断输入的是 URL 还是 query
+3. 开始导航
+   1. 当点击回车，UI thread 通知 network thread 获取网页内容，并控制 tab 页的 spinner 展示，表示正在加载中
+   2. network thread 执行 DNS 查询随后为请求建立 TLS 连接
+   3. 如果 network thread 接收到重定向请求头，会通知 ui thread 要求重定向，随后另外一个 url 请求会被触发。
+4. 读取响应
+   1. 当请求响应返回的时候，network thread 会根据 Content-Type 和 MIME Type 判断响应内容格式
+      - 如果响应内容是 html，下一步会把数据传递给 renderer process
+      - 如果是 zip 或其他文件，会把相关数据传输给文件下载器
+   2. Safe Browseing 会触发检查是否是恶意站点，是的话会显示告警页
+5. 查找渲染进程
+   1. 当第四步检查完毕，network thread 确信可以导航到请求网页，network thread 会通知 UI thread 数据已准备好
+   2. UI thread 会查找到一个 renderer process 进程进行网页渲染。
+6. 确认导航
+   1. 上述过程，确认数据和渲染进程可用，Browser process 发送 IPC 消息给 renderer process 来确认导航。
+   2. 一旦 Browser process 收到 renderer process 的渲染确认消息，导航过程结束，页面渲染过程开始
+      - 地址栏会更新，展示出新网页的网页信息
+      - history tab 会更新，可通过返回键返回导航来的页面（这些信息会存在硬盘）
+7. 渲染进程
+   1. 渲染进程包括：
+      - 主线程 Main thread
+      - 工作线程 Worker thread
+      - 排版线程 Compositor thread
+      - 光栅线程 Raster thread
+   2. 构建 DOM
+   3. 加载次级资源：图片 css js
+   4. js 的下载与执行： 阻塞解析 html
+   5. 样式计算
+   6. 获取布局
+   7. 绘制各元素
+   8. 合成帧：
+      1. 复合是一种分割页面为不同的层，并单独栅格化，随后组合为帧
+      2. 主线程遍历布局树来创建层树（layer tree）
+      3. 一旦层数被创建，渲染顺序被确定，主线程通知合成器线程栅格化每一层，分成多个磁贴，并发送给栅格线程。
+      4. 栅格线程会栅格化每一个磁贴并发送给 GPU 显存中
+   9. renderer process 渲染结束，会发送 IPC 消息给 Browser process，UI thread 会停止展示 tab 中的 spinner。
+
 ### 跨域
 
 > **同源策略：** 协议，域名， 端口一致
@@ -858,6 +900,7 @@ function heapSort(nums) {
     }
     ```
 18. 判断成对符号
+
     ```
     const validParentheses = str => {
       if(!str) return false
@@ -882,6 +925,153 @@ function heapSort(nums) {
       }
       if(stack.length === 0) return true
       return false
+    }
+    ```
+
+19. 三数之和
+    ```
+    function threeSumZero(arr) {
+      const len = arr.length;
+      if (len < 3) return [];
+      const nums = arr.sort((a, b) => a - b);
+      const result = [];
+      for (let i = 0; i < len; i++) {
+        if (nums[i] > 0) break;
+        if (nums[i] === nums[i - 1]) continue;
+        let l = i + 1;
+        let r = len - 1;
+        while (l < r) {
+          let sum = nums[i] + nums[l] + nums[r];
+          if (sum === 0) {
+            result.push([nums[i], nums[l], nums[r]]);
+            while (l < r && nums[l] === nums[l + 1]) {
+              l++;
+            }
+            while (l < r && nums[r] === nums[r - 1]) {
+              r--;
+            }
+            l++;
+            r--;
+          } else if (sum < 0) {
+            l++;
+          } else {
+            r--;
+          }
+        }
+      }
+      console.log(result);
+      return result;
+    }
+    ```
+20. 红绿灯
+    ```
+    async function step(color, duration) {
+      console.log(color)
+      await new Promise((resolve, reject) => setTimeout(resolve, duration))
+    }
+    async function showLight() {
+      while(true) {
+        await step('red', 3000)
+        await step('green', 1000)
+        await step('yellow', 2000)
+      }
+    }
+    ```
+21. 最大无重复子串长度
+    ```
+    function loneSubStr(s) {
+      const arr = s.split('')
+      const len = arr.length
+      if(len === 1) return 1
+      const maxLen = 0
+      for(let i=0;i<len-1;i++){
+        let str = arr[i]
+        for(letj=i+1;j<len;j++){
+          if(str.indexOf(arr[j]) !=== -1) {
+            maxLen = str.length > maxLen ? str.length : maxLen
+            break;
+          }
+          str += arr[j]
+          maxLen = str.length > maxLen ? str.length : maxLen
+            break;
+        }
+      }
+      return maxLen
+    }
+    ```
+22. 最大子串和
+
+    ```
+    const maxSum = arr => {
+      let current = 0
+      let sum = 0
+      for(let i = 0,ilen=arr.length;i<ilen;i++) {
+        if(current > 0) {
+          current+=arr[i]
+        } else {
+          current = arr[i]
+        }
+
+        if(current>sum) {
+          sum = current
+        }
+      }
+      return sum
+    }
+    ```
+
+23. 最大公共子串
+    ```
+    const findSubstr = (str1, str2) => {
+      if(str1.length > str2.length) {
+        [str1, str2] = [str2, str1]
+      }
+      const len1 = str1.length
+      const len2 = str2.length
+      for(let j = len1;j>0;j--) {
+        for(let i = 0;i<len1-j;i++) {
+          const current = str1.substr(i,j)
+          if(str2.indexOf(current) >=0) {
+            return current
+          }
+        }
+      }
+      return ''
+    }
+    ```
+24. 最大子序列长度
+    ```
+    function lcs(str1, str2) {
+      const len1 = str1.length
+      const len2 = str2.length
+      const dp = [new Array(len2+1).fill(0)]
+      for(let i = 1; i<= len1;i++) {
+        dp[i] = [0]
+        for(let j = 1;j<=len2;j++) {
+          if(str1[i-1]===str2[j-1]) {
+            dp[i][j]=dp[i-1][j-1]+1
+          } else {
+            dp[i][j]=Math.max(dp[i-1][j], dp[i][j-1])
+          }
+        }
+      }
+      return dp[len1][len2]
+    }
+    ```
+25. 最长公共前缀
+    ```
+    function longFirstStr(strs) {
+      if (strs === null || strs.length === 0) return "";
+      let prevs = strs[0];
+      for (let i = 0, ilen = strs.length; i < ilen; i++) {
+        let j = 0;
+        for (; j < prevs.length && j < strs[i].length; j++) {
+          if (prevs.charAt(j) !== strs[i].charAt(j)) break;
+        }
+        prevs = prevs.substr(0, j);
+        if (prevs === "") return "";
+      }
+      return prevs;
     }
     ```
 
@@ -971,42 +1161,6 @@ function heapSort(nums) {
     const toHump = str => str.replace(/\_(\w)/g, (a,b,c) => b.toUpperCase())
     ```
 
-13. 三数之和
-    ```
-    function threeSumZero(arr) {
-      const len = arr.length;
-      if (len < 3) return [];
-      const nums = arr.sort((a, b) => a - b);
-      const result = [];
-      for (let i = 0; i < len; i++) {
-        if (nums[i] > 0) break;
-        if (nums[i] === nums[i - 1]) continue;
-        let l = i + 1;
-        let r = len - 1;
-        while (l < r) {
-          let sum = nums[i] + nums[l] + nums[r];
-          if (sum === 0) {
-            result.push([nums[i], nums[l], nums[r]]);
-            while (l < r && nums[l] === nums[l + 1]) {
-              l++;
-            }
-            while (l < r && nums[r] === nums[r - 1]) {
-              r--;
-            }
-            l++;
-            r--;
-          } else if (sum < 0) {
-            l++;
-          } else {
-            r--;
-          }
-        }
-      }
-      console.log(result);
-      return result;
-    }
-    ```
-
 ### 问题
 
 1. 将数组扁平化去并除其中重复部分数据，最终得到一个升序且不重复的数组
@@ -1073,3 +1227,24 @@ const sleep = time => new Promise(resolve => setTimeout(resolve, time))
      return this.valueOf() - i
    }
    ```
+
+合并 K 个有序链表
+求数独
+二叉树的层级遍历
+二叉树的锯齿形层级遍历
+字符串翻转
+重排链表
+二叉树插入节点
+二叉搜索树节点删除
+链表翻转
+接雨水
+旋转有序数组的峰值数字
+有序矩阵的第 k 小数字
+编辑距离
+二分查找
+找出小于并且最接近目标数字的数
+寻找旋转排序数组中的最小值
+不同路径
+两两交换链表中的节点
+山脉数组的峰顶索引
+盛最多水的容器
