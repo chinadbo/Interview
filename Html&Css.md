@@ -21,9 +21,17 @@ HTML5
 3. 存储 - localStorage sessionStorage IndexDB
 4. geolocation web-worker
 
+**页面布局**
+
 异步脚本加载 defer 🆚 async
-defer：按顺序加载，加载完执行，执行完出发 DOMContentLoaded 事件
-async：不按顺序加载，加载完立即执行，出发 DOMContentLoaded 事件时机不定。
+
+- defer：按顺序加载，加载完执行，执行完触发 DOMContentLoaded 事件
+- async：不按顺序加载，加载完立即执行，触发 DOMContentLoaded 事件时机不定。
+
+link script
+
+- link 不会阻塞 dom tree 的生成，但是会阻塞 paint
+- script 阻止 dom 解析
 
 ### 重绘和回流
 
@@ -73,70 +81,76 @@ cache-control:
    - border-radius border-image box-shadow text-shadow
    - background-size background-origin
    - transfrom animation
-2. 伪类 - 向某些选择器添加特殊的效果
+2. 动画
+   1. `transform: translate3D(0,0,0);transition: All 0.4s ease-in-out;`
+   2. `@keyframes movement{}; animation: movement 3s`
+   3. requestAnimationFrame + css
+3. 伪类 - 向某些选择器添加特殊的效果
    - `:link`
    - `:visited`
    - `:hover`
    - `:active`
    - `:first-child` `:last-child`
-3. 伪元素 - html 中不存在的元素
+4. 伪元素 - html 中不存在的元素
    - `::before`
    - `::after`
    - `::first-line`
    - `::first-letter`
    - `::section`
-4. `display: none`, `visibility: hidden`, `opacity: 0`
+5. `display: none`, `visibility: hidden`, `opacity: 0`
    - display: none (不占空间，不能点击)（场景，显示出原来这里不存在的结构）- 回流操作
    - visibility: hidden（占据空间，不能点击）（场景：显示不会导致页面结构发生变动，不会撑开）- 重绘操作 - 子孙节点可显示
    - opacity: 0（占据空间，可以点击）（场景：可以跟 transition 搭配）- 重绘操作
-5. animation
+6. animation
    ```
    @keyframes myMove {
      from{}to{}
    }
    div{animation: myMove 5s infinite}
    ```
-6. `<img src="1.jpg" style="width:480px!important;”>`让图片宽度为 300px
+7. `<img src="1.jpg" style="width:480px!important;”>`让图片宽度为 300px
    - `max-width: 300px`
    - `transfrom: scale(0.625)`
    - `box-sizing: border-box;padding: 90px`
    - `@keyframes test{ from {width:300px} to {width: 300px}}`
-7. 1px
+8. 1px
    - 伪元素 + transform scaleY(0.5)
    - `box-shadow: inset 0px -1px 1px -1px #d4d6d7`
-8. 文本溢出
-   - 单行
-     ```
-     width: 100px;
-     overflow: hidden;
-     text-overflow: ellipsis;
-     white-space: nowrap;
-     ```
-   - 多行
-     ```
-     display: -webkit-box;
-     -webkit-box-orient: vertical;
-     -webkit-line-clamp: 3;
-     overflow: hidden;
-     text-overflow: ellipsis;
-     ```
-9. flex: flex-group flex-shrink flex-basis
+9. 文本溢出
+
+- 单行
+  ```
+  width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  ```
+- 多行
+  ```
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  ```
+
+11. flex: flex-group flex-shrink flex-basis
 
 ```
 <div class="container">
- <div class="left"></div>
- <div class="right"></div>
+<div class="left"></div>
+<div class="right"></div>
 </div>
 .container {
- width: 600px;
- display: flex;
+width: 600px;
+display: flex;
 }
 .left1 {
- flex: 1 2 500px;
- // left1 = 500 - (500+400-600)*(500*2/(500*2+400*1))
+flex: 1 2 500px;
+// left1 = 500 - (500+400-600)*(500*2/(500*2+400*1))
 }
 .right1 {
- flex: 2 1 400px;
+flex: 2 1 400px;
 }
 //
 .left2{
