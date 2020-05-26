@@ -12,6 +12,7 @@
     - [websocket 握手](#websocket-%e6%8f%a1%e6%89%8b)
     - [DNS](#dns)
   - [XMLHttpRequest](#xmlhttprequest)
+  - [Fetch](#fetch)
   - [问题](#%e9%97%ae%e9%a2%98)
 
 # HTTP 核心问题
@@ -208,7 +209,7 @@ TLS 握手过程成会完成以下：
 - 确定将使用哪些加密套件。
 - 通过服务器的公钥和 SSL 证书颁发机构的数字签名来验证服务器的身份
 - 握手完成后，生成会话密钥以使用对称加密
-  ![](./assets/https-handshake.jpeg)
+  ![https handshake](https://user-gold-cdn.xitu.io/2019/12/15/16f080a6f6375dc1)
   具体过程：
 
 1. client hello： 包括客户端支持的 TLS 版本、加密套件和客户端随机值。
@@ -297,6 +298,18 @@ xhr.send(data) // 发送数据
 |       3        |    LOADING(正在下载响应体)     | response entity body 正在下载，xhr.response 可能有响应数据 |
 |       4        |     DONE(整个传输过程结束)     | 传输过程结束，不管成功还是失败                             |
 
+## Fetch
+
+1. fetch 带 cookie `credentials: "include"`
+2. fetch 条 post 请求的时候，总是发送两次请求，第一次返回 204
+   fetch 第一次发送了 options 请求，询问服务器是否支持请求头，如果支持第二次发送请求。
+
+```
+fetch(url).then(response => response.json())
+  .then(data => console.log(data))
+  .catch(e => console.log("Oops, error", e))
+```
+
 ## 问题
 
 1. 【问题 1】为什么连接的时候是三次握手，关闭的时候却是四次握手？
@@ -337,23 +350,23 @@ TCP 还设有一个保活计时器，显然，客户端如果出现故障，服�
          - HTTP 接口不支持 SameSite=None，所以加上 Secure
          - UA 检测（IOS12 safari 和老版本 Chrome 把 SameSite=None 识别成 Strict）不下发 SameSite=None
 
-   Cookie 价值
+Cookie 价值
 
-   - 会话状态管理（登陆状态、购物车、需要记录的值等）
-   - 个性化设置（用户自定义设置、主题）
-   - 精准广告、推送
+- 会话状态管理（登陆状态、购物车、需要记录的值等）
+- 个性化设置（用户自定义设置、主题）
+- 精准广告、推送
 
-   session
+session
 
-   - session 状态存储于服务端、以 seesionId 的形式下发浏览器 cookie
+- session 状态存储于服务端、以 seesionId 的形式下发浏览器 cookie
 
-   token（令牌）
+token（令牌）
 
-   - 用于验证和信息交换
-   - 无状态
-   - 防 csrf
-   - 多站点使用
-   - 支持移动平台、性能好
+- 用于验证和信息交换
+- 无状态
+- 防 csrf
+- 多站点使用
+- 支持移动平台、性能好
 
 6. cookie 和 token 都放在 header，为何只劫持 cookie？
    因为传统的 cookie 保存的有 sessionid，服务器会根据这个 sessionid，确保服务器和客户端的对话；这时 cookie 是有状态的，意味着验证记录或者会话需要一直在服务端和客户端之间保持。而 token 是无状态的，服务器不记录哪些登陆了或者下发了哪些 token，只会验证 token 是否有效。通常 token 也有有效时间，来确保不被劫持。所以劫持 cookie 比劫持 token 更有效果。
@@ -389,6 +402,3 @@ TCP 还设有一个保活计时器，显然，客户端如果出现故障，服�
     x-oss-request-id: 598D5ED34F29D01FE2925F41
     x-oss-storage-class: Standard
     ```
-
-11. fetch 条 post 请求的时候，总是发送两次请求，第一次返回 204
-    fetch 第一次发送了 options 请求，询问服务器是否支持请求头，如果支持第二次发送请求。
