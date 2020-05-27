@@ -357,9 +357,59 @@
 
 ## 设计模式
 
+1. 外观模式
+   > 它为子系统的一组接口提供一个统一的高层接口，使子系统更容易使用，也就是把多个子系统中复杂逻辑进行抽象，从而提供一个更统一、更简洁、更易用的 API
+
+```
+// 绑定事件
+function addEvent(element, event, handler) {
+  if (element.addEventListener) {
+    element.addEventListener(event, handler, false);
+  } else if (element.attachEvent) {
+    element.attachEvent('on' + event, handler);
+  } else {
+    element['on' + event] = fn;
+  }
+}
+
+// 取消绑定
+function removeEvent(element, event, handler) {
+  if (element.removeEventListener) {
+    element.removeEventListener(event, handler, false);
+  } else if (element.detachEvent) {
+    element.detachEvent('on' + event, handler);
+  } else {
+    element['on' + event] = null;
+  }
+}
+```
+
+2. 代理模式
+   - 增加对一个对象的访问控制
+   - 当访问一个对象的过程中需要添加额外的控制
+3. 工厂模式（Factory Pattern）
+   ```
+   function BMWCar(color) {
+     this.color = color
+     this.brand = 'BMW'
+   }
+   ```
+4. 单例模式（Singleton Pattern）
+   ```
+   const SingleService = (function(){
+     function service(){}
+     let singleService
+     return {
+       getSetvice:function() {
+         if(singleService) return singleService
+       }
+     }
+   })()
+   ```
+
 ### 观察者模式 🆚 发布-订阅者模式
 
-![观察者模式 🆚 发布-订阅者模式](https://user-gold-cdn.xitu.io/2017/11/22/15fe1b1f174cd376?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![观察者模式 🆚 发布-订阅者模式](https://user-gold-cdn.xitu.io/2017/11/22/15fe1b1f174cd376)
 
 观察者模式：
 ![观察者模式](https://user-gold-cdn.xitu.io/2017/11/22/15fe1b1f1797e09a)
@@ -1072,6 +1122,19 @@ function heapSort(nums) {
         if (prevs === "") return "";
       }
       return prevs;
+    }
+    ```
+26. 斐波拉
+    ```
+    const cache = []
+    function fib(n) {
+      if(cache[n]) return cache[n]
+      if(n<=2) {
+        cache[n]=1
+        return 1
+      }
+      cache.push(fib(n-1) + fib(n-2))
+      return cache[n]
     }
     ```
 
