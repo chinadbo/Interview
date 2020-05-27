@@ -58,14 +58,32 @@ const times = {
 
 性能指标：
 
-1. FCP：First Contentful Paint 首次内容绘制
-2. FMP：First Meaningful Paint 首次有效绘制
-3. Speed Index： 速度指数，浏览器出现可是内容的时间
-4. FID：First CPU Idle 主线程初次空闲时间
-5. TTI：Time To Interactive 可交互时间
-6. Max Potential First Input Delay： 最大无响应时间，也就是最长的 task 执行时间。
-7. Total Blocking Time： 总阻塞时间
-8. Largest Contentful Paint： 最大内容渲染
+1. FP: First Paint 首次绘制
+   ```
+   const FPTime = performance.getEntriesByType('paint')[0].startTime
+   ```
+2. FCP：First Contentful Paint 首次内容绘制
+
+   ```
+   const FCPTime = performance.getEntriesByType('paint')[1].startTime
+
+   ```
+
+3. FMP：First Meaningful Paint 首次有效绘制
+4. FID: First input delay 首次输入延迟
+   ```
+   const FIDTime = performance.getEntriesByType('first-input')[0].startTime
+   ```
+5. Speed Index： 速度指数，浏览器出现可是内容的时间
+6. FCI：First CPU Idle 主线程初次空闲时间
+   `performance.timing.domContentLoadedEventEnd`
+7. TTI：Time To Interactive 可交互时间
+   ```
+   performance.timing.domContentLoadedEventStart - performance.timing.navigationStart
+   ```
+8. Max Potential First Input Delay： 最大无响应时间，也就是最长的 task 执行时间。
+9. Total Blocking Time： 总阻塞时间
+10. Largest Contentful Paint： 最大内容渲染
 
 方法：
 
