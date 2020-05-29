@@ -1,49 +1,29 @@
-- [HTML](#html)
-  - [重绘和回流](#%e9%87%8d%e7%bb%98%e5%92%8c%e5%9b%9e%e6%b5%81)
+- [浏览器](#%e6%b5%8f%e8%a7%88%e5%99%a8)
     - [浏览器渲染机制 - 流式布局模型](#%e6%b5%8f%e8%a7%88%e5%99%a8%e6%b8%b2%e6%9f%93%e6%9c%ba%e5%88%b6---%e6%b5%81%e5%bc%8f%e5%b8%83%e5%b1%80%e6%a8%a1%e5%9e%8b)
+    - [重绘和回流](#%e9%87%8d%e7%bb%98%e5%92%8c%e5%9b%9e%e6%b5%81)
     - [浏览器缓存机制](#%e6%b5%8f%e8%a7%88%e5%99%a8%e7%bc%93%e5%ad%98%e6%9c%ba%e5%88%b6)
+- [HTML](#html)
 - [CSS](#css)
 - [兼容性](#%e5%85%bc%e5%ae%b9%e6%80%a7)
 
-## HTML
+## 浏览器
 
-iframe：
-缺陷：
-
-1. 会阻塞主页面的 onload 事件
-2. 搜索引擎无法解读 iframe，不利于 SEO
-3. iframe 和主页面共享连接池，会影响性能
-
-HTML5
-
-1. 语义化标签 header footer nav section article aside audio video canvas
-2. 表单 input - color data range
-3. 存储 - localStorage sessionStorage IndexDB
-4. geolocation web-worker
-
-**页面布局**
-
-异步脚本加载 defer 🆚 async
-
-- defer：按顺序加载，加载完执行，执行完触发 DOMContentLoaded 事件
-- async：不按顺序加载，加载完立即执行，触发 DOMContentLoaded 事件时机不定。
-
-link script
-
-- link 不会阻塞 dom tree 的生成，但是会阻塞 paint
-- script 阻止 dom 解析
-
-### 重绘和回流
+**浏览器获取资源文件的流程**
+![浏览器获取资源文件的流程](https://s0.lgstatic.com/i/image/M00/07/0E/Ciqc1F647j-AFiBtAABWh7ld3uA965.png)
 
 #### 浏览器渲染机制 - 流式布局模型
 
-![浏览器渲染机制](https://camo.githubusercontent.com/bc1b4024057309bf919e96e7ccdccb39d50fa712/68747470733a2f2f757365722d676f6c642d63646e2e786974752e696f2f323031382f31322f31302f313637393862386462353463616133313f773d36323426683d32383926663d706e6726733d3431303537)
+![浏览器渲染机制1](https://s0.lgstatic.com/i/image/M00/12/EE/CgqCHl7OM-CAQGiGAAFv6uHi6MI573.png)
+
+![浏览器渲染机制2](https://camo.githubusercontent.com/bc1b4024057309bf919e96e7ccdccb39d50fa712/68747470733a2f2f757365722d676f6c642d63646e2e786974752e696f2f323031382f31322f31302f313637393862386462353463616133313f773d36323426683d32383926663d706e6726733d3431303537)
 
 1. DOM CSSOM
 2. Render Tree 渲染树（只包含可见的节点）
 3. Layout 回流，几何信息（位置，大小）
 4. Painting 重绘，节点绝对信息
 5. Display （Composition， GPU）
+
+#### 重绘和回流
 
 重绘：outline visibility color background-color（不会影响布局的）
 回流： 布局或几何属性需要改变
@@ -74,6 +54,40 @@ cache-control:
 
 缓存机制：
 ![cache str](https://upload-images.jianshu.io/upload_images/3174701-9d9e8b52a18ed35a)
+
+## HTML
+
+iframe：
+缺陷：
+
+1. 会阻塞主页面的 onload 事件
+2. 搜索引擎无法解读 iframe，不利于 SEO
+3. iframe 和主页面共享连接池，会影响性能
+
+HTML5
+
+1. 语义化标签 header footer nav section article aside audio video canvas
+2. 表单 input - color data range
+3. 存储 - localStorage sessionStorage IndexDB
+4. geolocation web-worker
+
+meta
+
+- 自动刷新 `<meta http-equiv='Refresh' content='5,URL=page2.html'>`
+- SEO： content description 等
+
+**脚本加载**
+
+异步脚本加载 defer 🆚 async
+
+- defer：按顺序加载，加载完执行，执行完触发 DOMContentLoaded 事件
+- async：不按顺序加载，加载完立即执行，触发 DOMContentLoaded 事件时机不定。
+- `type='module'`按 ES6 模块进行解析，默认阻塞效果同 defer
+
+**link**
+
+- link 不会阻塞 dom tree 的生成，但是会阻塞 paint
+- script 阻止 dom 解析
 
 ## CSS
 
