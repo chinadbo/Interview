@@ -534,6 +534,8 @@ function selectionSort(arr) {
 > 平均 O(n2)
 > ![insertSort](https://upload-images.jianshu.io/upload_images/1867034-d1537e355abdd298.gif)
 
+方法 1:
+
 ```
 function insertSort(arr) {
   let len = arr.length
@@ -547,6 +549,24 @@ function insertSort(arr) {
       arr[j] = arr[j-1] // 将前一个数复制到后一个数上
     }
     arr[j]=temp // 找到考察的数应在的位置
+  }
+  return arr
+}
+```
+
+方法 2：
+
+```
+function insertSort(arr){
+  const len = arr.length
+  for(let i = 1; i < len; i++) {
+    let j = i - 1
+    let temp = arr[i]
+    while(j>=0&&temp<arr[j]){
+      arr[j+1]=arr[j]
+      j--
+    }
+    arr[j+1]=temp
   }
   return arr
 }
