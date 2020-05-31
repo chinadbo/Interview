@@ -45,6 +45,7 @@
 5. 死亡状态 Dead
 
 **进程调度**
+
 ![进程调度](https://user-gold-cdn.xitu.io/2019/10/21/16deecc24dfd080c)
 
 1. 先到先得 FCFS
