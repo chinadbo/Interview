@@ -1,36 +1,22 @@
 - [CS](#cs)
-  - [OSI 七层模型](#osi-%e4%b8%83%e5%b1%82%e6%a8%a1%e5%9e%8b)
-  - [进程 🆚 线程](#%e8%bf%9b%e7%a8%8b-%f0%9f%86%9a-%e7%ba%bf%e7%a8%8b)
-    - [进程间通信](#%e8%bf%9b%e7%a8%8b%e9%97%b4%e9%80%9a%e4%bf%a1)
-    - [线程间通信](#%e7%ba%bf%e7%a8%8b%e9%97%b4%e9%80%9a%e4%bf%a1)
-    - [浏览器进程](#%e6%b5%8f%e8%a7%88%e5%99%a8%e8%bf%9b%e7%a8%8b)
-  - [跨域](#%e8%b7%a8%e5%9f%9f)
-  - [简单请求 🆚 复杂请求](#%e7%ae%80%e5%8d%95%e8%af%b7%e6%b1%82-%f0%9f%86%9a-%e5%a4%8d%e6%9d%82%e8%af%b7%e6%b1%82)
-- [事务](#%e4%ba%8b%e5%8a%a1)
-- [设计模式](#%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f)
-  - [观察者模式 🆚 发布-订阅者模式](#%e8%a7%82%e5%af%9f%e8%80%85%e6%a8%a1%e5%bc%8f-%f0%9f%86%9a-%e5%8f%91%e5%b8%83-%e8%ae%a2%e9%98%85%e8%80%85%e6%a8%a1%e5%bc%8f)
-- [算法](#%e7%ae%97%e6%b3%95)
-  - [DFS 🆚 BFS](#dfs-%f0%9f%86%9a-bfs)
-    - [深度优先搜索 Depth-First-Search](#%e6%b7%b1%e5%ba%a6%e4%bc%98%e5%85%88%e6%90%9c%e7%b4%a2-depth-first-search)
-    - [广度优先搜索 Breadth-First-Search](#%e5%b9%bf%e5%ba%a6%e4%bc%98%e5%85%88%e6%90%9c%e7%b4%a2-breadth-first-search)
-  - [排序](#%e6%8e%92%e5%ba%8f)
-  - [基本算法](#%e5%9f%ba%e6%9c%ac%e7%ae%97%e6%b3%95)
-  - [正则表达式](#%e6%ad%a3%e5%88%99%e8%a1%a8%e8%be%be%e5%bc%8f)
-  - [问题](#%e9%97%ae%e9%a2%98)
+  - [进程 🆚 线程](#进程--线程)
+      - [进程间通信](#进程间通信)
+      - [线程间通信](#线程间通信)
+  - [事务](#事务)
+  - [设计模式](#设计模式)
+    - [观察者模式 🆚 发布-订阅者模式](#观察者模式--发布-订阅者模式)
+  - [算法](#算法)
+    - [DFS 🆚 BFS](#dfs--bfs)
+      - [深度优先搜索 Depth-First-Search](#深度优先搜索-depth-first-search)
+      - [广度优先搜索 Breadth-First-Search](#广度优先搜索-breadth-first-search)
+    - [排序](#排序)
+    - [基本算法](#基本算法)
+    - [正则表达式](#正则表达式)
+    - [问题](#问题)
 
-## CS
+# CS
 
-### OSI 七层模型
-
-1. 应用层 - HTTP FTP SMTP
-2. 表示层 - 加解密压缩 LPX
-3. 会话层 - SSL TLS
-4. 传输层 - TCP UDP
-5. 网络层 - IP
-6. 数据链路层
-7. 物理层
-
-### 进程 🆚 线程
+## 进程 🆚 线程
 
 - 进程是一个动态的过程，是一个活动的实体
 - 进程是操作系统进行资源分配和调度的最小单元
@@ -87,262 +73,6 @@
   - 条件变量：可以以原子的方式阻塞进程，直到某个特定条件为真为止。对条件的测试是在互斥锁的保护下进行的。条件变量始终与互斥锁一起使用。
 - 信号量机制（Semaphore）：包括无名进程信号量和命名线程信号量
 - 信号机制（Signal）：类似进程间的信号处理
-
-#### 浏览器进程
-
-1. Browser 进程：浏览器的主进程（协调、主控），只有一个
-   1. 负责浏览器界面显示，与用户交互，如前进后退。
-   2. 负责各个页面管理，创建和销毁其他进程
-   3. 将渲染进程得到的位图绘制到用户界面
-   4. 网络资源的管理和下载
-2. 插件进程
-3. GPU 进程：用于 3D 绘制
-4. 浏览器渲染进程（内部多线程）- 页面渲染，脚本执行，事件处理
-   1. GUI 线程
-   2. JS 引擎线程
-   3. 事件触发线程
-   4. 定时器线程
-   5. 网络请求线程
-
-**输入 URL 后发生：**
-
-1. 浏览器开启 Browser process 浏览器进程。
-2. 处理输入
-   1. UI thread UI 线程控制浏览器按钮及输入框
-   2. UI thread 判断输入的是 URL 还是 query
-3. 开始导航
-   1. 当点击回车，UI thread 通知 network thread 获取网页内容，并控制 tab 页的 spinner 展示，表示正在加载中
-   2. network thread 执行 DNS 查询随后为请求建立 TLS 连接
-   3. 如果 network thread 接收到重定向请求头，会通知 ui thread 要求重定向，随后另外一个 url 请求会被触发。
-4. 读取响应
-   1. 当请求响应返回的时候，network thread 会根据 Content-Type 和 MIME Type 判断响应内容格式
-      - 如果响应内容是 html，下一步会把数据传递给 renderer process
-      - 如果是 zip 或其他文件，会把相关数据传输给文件下载器
-   2. Safe Browseing 会触发检查是否是恶意站点，是的话会显示告警页
-5. 查找渲染进程
-   1. 当第四步检查完毕，network thread 确信可以导航到请求网页，network thread 会通知 UI thread 数据已准备好
-   2. UI thread 会查找到一个 renderer process 进程进行网页渲染。
-6. 确认导航
-   1. 上述过程，确认数据和渲染进程可用，Browser process 发送 IPC 消息给 renderer process 来确认导航。
-   2. 一旦 Browser process 收到 renderer process 的渲染确认消息，导航过程结束，页面渲染过程开始
-      - 地址栏会更新，展示出新网页的网页信息
-      - history tab 会更新，可通过返回键返回导航来的页面（这些信息会存在硬盘）
-7. 渲染进程
-   1. 渲染进程包括：
-      - 主线程 Main thread
-      - 工作线程 Worker thread
-      - 排版线程 Compositor thread
-      - 光栅线程 Raster thread
-   2. 构建 DOM
-   3. 加载次级资源：图片 css js
-   4. js 的下载与执行： 阻塞解析 html
-   5. 样式计算
-   6. 获取布局
-   7. 绘制各元素
-   8. 合成帧：
-      1. 复合是一种分割页面为不同的层，并单独栅格化，随后组合为帧
-      2. 主线程遍历布局树来创建层树（layer tree）
-      3. 一旦层数被创建，渲染顺序被确定，主线程通知合成器线程栅格化每一层，分成多个磁贴，并发送给栅格线程。
-      4. 栅格线程会栅格化每一个磁贴并发送给 GPU 显存中
-   9. renderer process 渲染结束，会发送 IPC 消息给 Browser process，UI thread 会停止展示 tab 中的 spinner。
-
-### 跨域
-
-> **同源策略：** 协议，域名， 端口一致
-> 同源策略限制：
->
-> 1. cookie localStorage indexdDB 无法读取
-> 2. DOM 和 JS 对象无法获取
-> 3. AJAX 请求不能发送
-
-1. `jsonp`跨域
-   原理： 浏览器允许 html 页面标签（img,video,img,script, link)加载不同域的静态资源。
-   缺点： 只能实现**get**请求
-
-   - 原生实现
-
-     ```
-     <script>
-       const script = document.createElement('script')
-       script.type = 'text/javascript'
-       // 传参一个回调函数名给后端，方便后端返回时执行这个在前端定义的回调函数
-       script.src = 'http://domain.com/login?user=admin&callback=handleCallback'
-       document.body.appendChild(script)
-
-       // 回调执行函数
-       function handleCallback(res) {
-         console.log(res)
-       }
-       </script>
-     ```
-
-     服务端返回如下（返回时即执行全局函数）：
-     `handleCallback({"status": true, "user": "admin"})`
-
-   - jQuery Ajax
-     ```
-     $.ajax({
-       url,
-       type: 'get',
-       dataType: 'jsonp', // 请求方式 jsonp
-       jsonpCallback: 'handleCallback', // 自定义回调函数名
-       data: {}
-     })
-     ```
-
-2. document.domain + iframe 跨域
-   原理： 两个页面通过 js 强制设置 document.domain 为基础主域
-   限制： 主域相同、子域不同场景
-   - 父窗口 `http://www.domain.com/a.html`
-     ```
-     <iframe id='child' src='http://child.domain.com/b.html></iframe>
-     <script>
-       document.domain = 'domain.com'
-       var user = 'admin'
-     </script>
-     ```
-   - 子窗口 `http://child.domain.com/b.html`
-     ```
-     <script>
-       document.domain = 'domain.com'
-       // 访问父窗口的变量
-       console.log(window.parent.user) // 'admin'
-     ```
-3. location.hash + iframe 跨域
-   原理： a 与 b 跨域通信，通过中间页 c 来实现，不同域通过 location.hash 传值。相同域直接 js 调用。
-
-   - A `http://www.domaina.com/a.html`
-
-     ```
-     <iframe id='b' src='http://www.domainb.com/b.html></iframe>
-     <script>
-       const iframe = document.getElementById('b')
-       // 向 B 传hash值
-       setTimeout(() => {
-         iframe.src = iframe.src + '#user=admin'
-       }, 1000)
-
-       // 全局函数 C可访问
-       function onCallback(res) {
-         console.log(res + ' from A')
-       }
-      </script>
-     ```
-
-   - B `http://www.domainb.com/b.html`
-     ```
-      <iframe id='c' src='http://www.domaina.com/c.html></iframe>
-      <script>
-        const iframe = document.getElementById('c')
-        // 监听来自 A 的hash值
-        window.onhashchange = function() {
-          iframe.src = iframe.src + location.hash
-        }
-      </script>
-     ```
-   - C `http://www.domaina.com/c.html`
-     ```
-     <script>
-       // 监听来自 B 的hash值
-       window.onhashchange = function() {
-         // 调用 A 的回调函数并传参
-         window.parent.parent.onCallback('from C' + location.hash.replace('#user', ''))
-       }
-     </script>
-     ```
-
-4. `window.name` + iframe 跨域
-   原理：name 值在不同的页面（甚至不同的域名）加载后依然存在（2MB 以内）
-5. postMessage(data, origin) 跨域
-   - 页面与新打开窗口的数据传递
-   - 多窗口之间消息传递
-   - 页面与嵌套的 iframe 消息传递
-   - A
-     ```
-     iframe.contentWindow.postMessage(JSON.stringify(data), 'http://www.domainb.com')
-     ```
-   - B
-     ```
-     window.addEventlistener('message', function(e) {
-       console.log(e.data)
-     })
-     ```
-6. 跨域资源共享 CORS
-   服务端设置 Access-Control-Allow-Origin，前端设置 withCredentials 是否带 cookie
-7. nginx 代理跨域
-
-   - 添加跨域
-     ```
-     location / {
-       add_header Access-Control-Allow-Origin *;
-     }
-     ```
-   - 反向代理
-
-     ```
-     location / {
-       proxy_pass http://www.domainb.com:8080; // 反向代理
-       proxy_cookie_domain www.domainb.com www.domaina.com; //修改cookie里域名
-
-       add_header Access-Control-Allow-Origin http://www.domaina.com;
-       add_header Access-Control-Allow-Credentials true;
-     }
-     ```
-
-8. Nodejs 中间件代理跨域
-   启用一个代理服务器，实现数据的转发，可以设置 cookieDomainRewrite 参数修改响应头 cookie 中域名，实现当前域的 cookie 写入。
-   ```
-   const express = require('express')
-   const proxy = require('http-proxy-middleware')
-   const app = express()
-   app.use('/', proxy({
-     // 代理跨域目标接口
-     target: 'http://www.domainb.com:8080',
-     changeOrigin: true,
-     // 修改响应头信息
-     onProxyRes: function(proxyRes, req, res) {
-      res.header('Access-Control-Allow-Origin', 'http://www.domaina.com');
-      res.header('Access-Control-Allow-Credentials', 'true');
-     },
-     // 修改响应头cookie中域名
-     cookieDomainRewrite: 'http://www.domaina.com'
-   }))
-   ```
-9. websocket 跨域
-   webSocket 实现浏览器与服务器全双工（支持跨域）通信。
-   ```
-   const socket = socketIO('http://domainb.com:8080')
-   // connect success
-   socket.on('connect', function() {
-     // listenning message
-     socket.on('message', function(msg) {
-       console.log(msg)
-     })
-     // listenning close
-     socket.on('disconnect', function() {
-       // close
-     })
-   })
-   ...
-   socket.send('some value')
-   ```
-
-### 简单请求 🆚 复杂请求
-
-**简单请求：**
-
-1. 请求方式为 HEAD、Get、Post
-2. http 头信息不超出一下内容：
-   1. Accept、Accept-Language、Content-Language、Last-Event-ID
-   2. Content-Type 包含：
-      1. application/x-www-form-urlencoded
-      2. multipart/form-data
-      3. text/plain
-
-**复杂请求**
-
-1. PUT 或 Delete 方法，Content-Type 为 Application/json
-2. CORS 请求，正式通信前，会增加一次预检请求 preflight
 
 ## 事务
 
@@ -422,6 +152,40 @@ function removeEvent(element, event, handler) {
 3. 发布-订阅者中，组件是松散耦合的，与观察者模式相反
 4. 观察者模式大多数是同步的，比如当时间触发，Subject 就会去调用观察者方法。发布订阅者通常通过消息队列异步处理。
 5. 观察者模式需要在单个应用程序地址空间中出现，而发布订阅者更像是交叉模式。
+
+```
+// 发布订阅模式简单版
+class Events {
+  constructor() {
+    this.handlers = {};
+    return this;
+  }
+  on(eventName, callback) {
+    if (!this.handlers[eventName]) {
+      this.handlers[eventName] = [];
+    }
+    this.handlers[eventName].push(callback);
+  }
+  off(eventName, callback) {
+    if (!this.handlers[eventName]) return;
+    this.handlers[eventName] = this.handlers[eventName].filter(
+      (item) => item !== callback
+    );
+  }
+  emit(eventName, ...rest) {
+    if (this.handlers[eventName]) {
+      this.handlers[eventName].forEach((cb) => cb.apply(this. rest));
+    }
+  }
+  once(eventName, callback) {
+    function fn() {
+      callback()
+      this.off(eventName, callback)
+    }
+    this.on(eventName, fn)
+  }
+}
+```
 
 ## 算法
 
@@ -1155,6 +919,180 @@ function heapSort(nums) {
       }
       cache.push(fib(n-1) + fib(n-2))
       return cache[n]
+    }
+    ```
+27. 链式调用
+    ```
+    class LazyManClass {
+      constructor(name) {
+        this.name = name
+        console.log(`My name is ${name}`)
+        this.queue = []
+        setTimeout(() => this.next(), 0)
+      }
+      eat(food) {
+        const fn = () => {
+          console.log(`I am eating ${food}`)
+          this.next()
+        }
+        this.queue.push(fn)
+        return this
+      }
+      sleepFirst(time) {
+        const fn = () => {
+          setTimeout(() => {
+            console.log(`Wait first for ${time}ms`)
+            this.next()
+          }, time)
+        }
+        this.queue.unshift(fn)
+        retur this
+      }
+      sleep(time) {
+        const fn = () => {
+          setTimeout(() => {
+            console.log(`wait for ${time}ms`)
+            this.next()
+          }, time)
+        }
+        this.queue.push(fn)
+        return this
+      }
+      next() {
+        const fn = this.queue.shift()
+        fn && fn()
+      }
+    }
+    function lazyMan(name) {
+      return new LazyManClass(name)
+    }
+    lazyMan('Tom').eat('eggs').sleepFirst(1000).eat('apple').sleep(2000).eat('junk food')
+    ```
+28. setTimeout 实现 setInterval
+    ```
+    function mySetInterval() {
+      mySetInterval.timer = setTimeout(() => {
+        arguments[0]()
+        mySetInterval(...arguments)
+      }, arguments[1])
+      mySetInterval.clear = function () {
+        clearTimeout(mySetInterval.timer)
+      }
+    }
+    ```
+29. 实现 multiRequest
+    ```
+    function multiRequest(urls, maxNum, callback) {
+      let urlCount = urls.length;
+      let requestQueue = [];
+      let result = [];
+      let currentIndex = 0;
+      const handleRequest = (url) => {
+        const req = fetch(url).then(res => {
+          const len = result.push(res)
+          if (len < urlCount && currentIndex + 1 < urlCount) {
+            requestQueue.shift()
+            handleRequest(urls[++i])
+          } else if (len === urlCount) {
+            typeof callback === 'function' && callback(result)
+          }
+        }).catch(e => result.push(e))
+        if (requestQueue.push(req) < maxNum) {
+          handleRequest(urls[++i])
+        }
+      };
+      handleRequest(urls[i])
+    }
+    ```
+30. 实现 once 函数
+    ```
+    function once(func) {
+      let flag = true
+      return function() {
+        if(flag) {
+          func.apply(this, arguments)
+          flag = false
+        }
+        return undefined
+      }
+    }
+    ```
+31. 连续数字格式化
+    ```
+    // 1,3,4,5,7,8
+    //=> 1, 3-5, 7-8
+    function formatNum(...nums) {
+      const arr = nums.sort((a, b) => a - b);
+      const len = arr.length;
+      let idx = 0;
+      let temp = [[arr[0]]];
+      for (let i = 1; i < len; i++) {
+        if (arr[i] - 1 === arr[i - 1]) {
+          temp[idx].push(arr[i]);
+        } else {
+          temp[++idx] = [arr[i]];
+        }
+      }
+      for (let j = 0, jlen = temp.length; j < jlen; j++) {
+        const len = temp[j].length;
+        if (len > 1) {
+          temp[j] = `${temp[j][0]}->${temp[j][len - 1]}`;
+        } else {
+          temp[j] = `${temp[j][0]}`;
+        }
+      }
+      return temp.join(", ");
+    }
+    ```
+32. 字符串转换
+    ```
+    function trans(str) {
+      if (typeof str !== "string") return "";
+      let len = str.length;
+      if (len < 2) return str;
+      let idx = 1;
+      let nums = 1;
+      let res = str[0];
+      let last = res;
+      while (idx < len) {
+        if (str[idx] === last) {
+          nums++;
+          if (idx === len - 1) {
+            res = res + nums;
+            break;
+          }
+        } else {
+          res = res + (nums > 1 ? nums : "") + str[idx];
+          last = str[idx];
+          nums = 1;
+        }
+        idx++;
+      }
+      return res;
+    }
+    console.log(trans("aaabcccaa"));
+    // a3bc3a2
+    ```
+33. 全排列
+    ```
+    function permute(...nums) {
+      const res = [];
+      nums.sort((a, b) => a - b);
+      find(nums, []);
+      return res;
+      function find(nums, temp) {
+        const len = nums.length;
+        if (nums.length === 0) {
+          res.push(temp.slice());
+        }
+        for (let i = 0; i < len; i++) {
+          temp.push(nums[i]);
+          const copy = nums.slice();
+          copy.splice(i, 1);
+          find(copy, temp);
+          temp.pop();
+        }
+      }
     }
     ```
 
