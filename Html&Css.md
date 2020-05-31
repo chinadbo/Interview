@@ -1,12 +1,72 @@
-- [浏览器](#%e6%b5%8f%e8%a7%88%e5%99%a8)
-    - [浏览器渲染机制 - 流式布局模型](#%e6%b5%8f%e8%a7%88%e5%99%a8%e6%b8%b2%e6%9f%93%e6%9c%ba%e5%88%b6---%e6%b5%81%e5%bc%8f%e5%b8%83%e5%b1%80%e6%a8%a1%e5%9e%8b)
-    - [重绘和回流](#%e9%87%8d%e7%bb%98%e5%92%8c%e5%9b%9e%e6%b5%81)
-    - [浏览器缓存机制](#%e6%b5%8f%e8%a7%88%e5%99%a8%e7%bc%93%e5%ad%98%e6%9c%ba%e5%88%b6)
+- [浏览器](#浏览器)
+  - [浏览器进程](#浏览器进程)
+    - [浏览器渲染机制 - 流式布局模型](#浏览器渲染机制---流式布局模型)
+    - [重绘和回流](#重绘和回流)
+    - [浏览器缓存机制](#浏览器缓存机制)
+  - [跨域](#跨域)
 - [HTML](#html)
 - [CSS](#css)
-- [兼容性](#%e5%85%bc%e5%ae%b9%e6%80%a7)
+- [兼容性](#兼容性)
 
 ## 浏览器
+
+### 浏览器进程
+
+1. Browser 进程：浏览器的主进程（协调、主控），只有一个
+   1. 负责浏览器界面显示，与用户交互，如前进后退。
+   2. 负责各个页面管理，创建和销毁其他进程
+   3. 将渲染进程得到的位图绘制到用户界面
+   4. 网络资源的管理和下载
+2. 插件进程
+3. GPU 进程：用于 3D 绘制
+4. 浏览器渲染进程（内部多线程）- 页面渲染，脚本执行，事件处理
+   1. GUI 线程
+   2. JS 引擎线程
+   3. 事件触发线程
+   4. 定时器线程
+   5. 网络请求线程
+
+**输入 URL 后发生：**
+
+1. 浏览器开启 Browser process 浏览器进程。
+2. 处理输入
+   1. UI thread UI 线程控制浏览器按钮及输入框
+   2. UI thread 判断输入的是 URL 还是 query
+3. 开始导航
+   1. 当点击回车，UI thread 通知 network thread 获取网页内容，并控制 tab 页的 spinner 展示，表示正在加载中
+   2. network thread 执行 DNS 查询随后为请求建立 TLS 连接
+   3. 如果 network thread 接收到重定向请求头，会通知 ui thread 要求重定向，随后另外一个 url 请求会被触发。
+4. 读取响应
+   1. 当请求响应返回的时候，network thread 会根据 Content-Type 和 MIME Type 判断响应内容格式
+      - 如果响应内容是 html，下一步会把数据传递给 renderer process
+      - 如果是 zip 或其他文件，会把相关数据传输给文件下载器
+   2. Safe Browseing 会触发检查是否是恶意站点，是的话会显示告警页
+5. 查找渲染进程
+   1. 当第四步检查完毕，network thread 确信可以导航到请求网页，network thread 会通知 UI thread 数据已准备好
+   2. UI thread 会查找到一个 renderer process 进程进行网页渲染。
+6. 确认导航
+   1. 上述过程，确认数据和渲染进程可用，Browser process 发送 IPC 消息给 renderer process 来确认导航。
+   2. 一旦 Browser process 收到 renderer process 的渲染确认消息，导航过程结束，页面渲染过程开始
+      - 地址栏会更新，展示出新网页的网页信息
+      - history tab 会更新，可通过返回键返回导航来的页面（这些信息会存在硬盘）
+7. 渲染进程
+   1. 渲染进程包括：
+      - 主线程 Main thread
+      - 工作线程 Worker thread
+      - 排版线程 Compositor thread
+      - 光栅线程 Raster thread
+   2. 构建 DOM
+   3. 加载次级资源：图片 css js
+   4. js 的下载与执行： 阻塞解析 html
+   5. 样式计算
+   6. 获取布局
+   7. 绘制各元素
+   8. 合成帧：
+      1. 复合是一种分割页面为不同的层，并单独栅格化，随后组合为帧
+      2. 主线程遍历布局树来创建层树（layer tree）
+      3. 一旦层数被创建，渲染顺序被确定，主线程通知合成器线程栅格化每一层，分成多个磁贴，并发送给栅格线程。
+      4. 栅格线程会栅格化每一个磁贴并发送给 GPU 显存中
+   9. renderer process 渲染结束，会发送 IPC 消息给 Browser process，UI thread 会停止展示 tab 中的 spinner。
 
 **浏览器获取资源文件的流程**
 ![浏览器获取资源文件的流程](https://s0.lgstatic.com/i/image/M00/07/0E/Ciqc1F647j-AFiBtAABWh7ld3uA965.png)
@@ -54,6 +114,187 @@ cache-control:
 
 缓存机制：
 ![cache str](https://upload-images.jianshu.io/upload_images/3174701-9d9e8b52a18ed35a)
+
+### 跨域
+
+> **同源策略：** 协议，域名， 端口一致
+> 同源策略限制：
+>
+> 1. cookie localStorage indexdDB 无法读取
+> 2. DOM 和 JS 对象无法获取
+> 3. AJAX 请求不能发送
+
+1. `jsonp`跨域
+   原理： 浏览器允许 html 页面标签（img,video,img,script, link)加载不同域的静态资源。
+   缺点： 只能实现**get**请求
+
+   - 原生实现
+
+     ```
+     <script>
+       const script = document.createElement('script')
+       script.type = 'text/javascript'
+       // 传参一个回调函数名给后端，方便后端返回时执行这个在前端定义的回调函数
+       script.src = 'http://domain.com/login?user=admin&callback=handleCallback'
+       document.body.appendChild(script)
+
+       // 回调执行函数
+       function handleCallback(res) {
+         console.log(res)
+       }
+       </script>
+     ```
+
+     服务端返回如下（返回时即执行全局函数）：
+     `handleCallback({"status": true, "user": "admin"})`
+
+   - jQuery Ajax
+     ```
+     $.ajax({
+       url,
+       type: 'get',
+       dataType: 'jsonp', // 请求方式 jsonp
+       jsonpCallback: 'handleCallback', // 自定义回调函数名
+       data: {}
+     })
+     ```
+
+2. document.domain + iframe 跨域
+   原理： 两个页面通过 js 强制设置 document.domain 为基础主域
+   限制： 主域相同、子域不同场景
+   - 父窗口 `http://www.domain.com/a.html`
+     ```
+     <iframe id='child' src='http://child.domain.com/b.html></iframe>
+     <script>
+       document.domain = 'domain.com'
+       var user = 'admin'
+     </script>
+     ```
+   - 子窗口 `http://child.domain.com/b.html`
+     ```
+     <script>
+       document.domain = 'domain.com'
+       // 访问父窗口的变量
+       console.log(window.parent.user) // 'admin'
+     ```
+3. location.hash + iframe 跨域
+   原理： a 与 b 跨域通信，通过中间页 c 来实现，不同域通过 location.hash 传值。相同域直接 js 调用。
+
+   - A `http://www.domaina.com/a.html`
+
+     ```
+     <iframe id='b' src='http://www.domainb.com/b.html></iframe>
+     <script>
+       const iframe = document.getElementById('b')
+       // 向 B 传hash值
+       setTimeout(() => {
+         iframe.src = iframe.src + '#user=admin'
+       }, 1000)
+
+       // 全局函数 C可访问
+       function onCallback(res) {
+         console.log(res + ' from A')
+       }
+      </script>
+     ```
+
+   - B `http://www.domainb.com/b.html`
+     ```
+      <iframe id='c' src='http://www.domaina.com/c.html></iframe>
+      <script>
+        const iframe = document.getElementById('c')
+        // 监听来自 A 的hash值
+        window.onhashchange = function() {
+          iframe.src = iframe.src + location.hash
+        }
+      </script>
+     ```
+   - C `http://www.domaina.com/c.html`
+     ```
+     <script>
+       // 监听来自 B 的hash值
+       window.onhashchange = function() {
+         // 调用 A 的回调函数并传参
+         window.parent.parent.onCallback('from C' + location.hash.replace('#user', ''))
+       }
+     </script>
+     ```
+
+4. `window.name` + iframe 跨域
+   原理：name 值在不同的页面（甚至不同的域名）加载后依然存在（2MB 以内）
+5. postMessage(data, origin) 跨域
+   - 页面与新打开窗口的数据传递
+   - 多窗口之间消息传递
+   - 页面与嵌套的 iframe 消息传递
+   - A
+     ```
+     iframe.contentWindow.postMessage(JSON.stringify(data), 'http://www.domainb.com')
+     ```
+   - B
+     ```
+     window.addEventlistener('message', function(e) {
+       console.log(e.data)
+     })
+     ```
+6. 跨域资源共享 CORS
+   服务端设置 Access-Control-Allow-Origin，前端设置 withCredentials 是否带 cookie
+7. nginx 代理跨域
+
+   - 添加跨域
+     ```
+     location / {
+       add_header Access-Control-Allow-Origin *;
+     }
+     ```
+   - 反向代理
+
+     ```
+     location / {
+       proxy_pass http://www.domainb.com:8080; // 反向代理
+       proxy_cookie_domain www.domainb.com www.domaina.com; //修改cookie里域名
+
+       add_header Access-Control-Allow-Origin http://www.domaina.com;
+       add_header Access-Control-Allow-Credentials true;
+     }
+     ```
+
+8. Nodejs 中间件代理跨域
+   启用一个代理服务器，实现数据的转发，可以设置 cookieDomainRewrite 参数修改响应头 cookie 中域名，实现当前域的 cookie 写入。
+   ```
+   const express = require('express')
+   const proxy = require('http-proxy-middleware')
+   const app = express()
+   app.use('/', proxy({
+     // 代理跨域目标接口
+     target: 'http://www.domainb.com:8080',
+     changeOrigin: true,
+     // 修改响应头信息
+     onProxyRes: function(proxyRes, req, res) {
+      res.header('Access-Control-Allow-Origin', 'http://www.domaina.com');
+      res.header('Access-Control-Allow-Credentials', 'true');
+     },
+     // 修改响应头cookie中域名
+     cookieDomainRewrite: 'http://www.domaina.com'
+   }))
+   ```
+9. websocket 跨域
+   webSocket 实现浏览器与服务器全双工（支持跨域）通信。
+   ```
+   const socket = socketIO('http://domainb.com:8080')
+   // connect success
+   socket.on('connect', function() {
+     // listenning message
+     socket.on('message', function(msg) {
+       console.log(msg)
+     })
+     // listenning close
+     socket.on('disconnect', function() {
+       // close
+     })
+   })
+   ...
+   socket.send('some value')
+   ```
 
 ## HTML
 
