@@ -368,10 +368,23 @@ class Events {
     }
     this.handlers[eventName].push(callback);
   }
-  emit(eventName, obj) {
+  off(eventName, callback) {
+    if (!this.handlers[eventName]) return;
+    this.handlers[eventName] = this.handlers[eventName].filter(
+      (item) => item !== callback
+    );
+  }
+  emit(eventName, ...rest) {
     if (this.handlers[eventName]) {
-      this.handlers[eventName].forEach((cb) => cb(obj));
+      this.handlers[eventName].forEach((cb) => cb.apply(this.rest));
     }
+  }
+  once(eventName, callback) {
+    function fn() {
+      callback();
+      this.off(eventName, callback);
+    }
+    this.on(eventName, fn);
   }
 }
 
@@ -478,3 +491,355 @@ function threeSumZero(arr) {
 }
 
 threeSumZero([-1, 0, 1, 2, -1, -4]);
+
+async function showLight(color, duration) {
+  console.log(color, new Date().getMilliseconds());
+  await new Promise((resolve, reject) => setTimeout(resolve, duration));
+}
+async function main() {
+  while (true) {
+    await showLight("red", 3000);
+    await showLight("green", 1000);
+    await showLight("yellow", 2000);
+  }
+}
+// main();
+
+/**
+//Promise 完整的实现
+class Promise {
+  callbacks = [];
+  state = "pending"; //增加状态
+  value = null; //保存结果
+  constructor(fn) {
+    fn(this._resolve.bind(this), this._reject.bind(this));
+  }
+  then(onFulfilled, onRejected) {
+    return new Promise((resolve, reject) => {
+      this._handle({
+        onFulfilled: onFulfilled || null,
+        onRejected: onRejected || null,
+        resolve: resolve,
+        reject: reject,
+      });
+    });
+  }
+  catch(onError) {
+    return this.then(null, onError);
+  }
+  finally(onDone) {
+    if (typeof onDone !== "function") return this.then();
+
+    let Promise = this.constructor;
+    return this.then(
+      (value) => Promise.resolve(onDone()).then(() => value),
+      (reason) =>
+        Promise.resolve(onDone()).then(() => {
+          throw reason;
+        })
+    );
+  }
+  static resolve(value) {
+    if (value && value instanceof Promise) {
+      return value;
+    } else if (
+      value &&
+      typeof value === "object" &&
+      typeof value.then === "function"
+    ) {
+      let then = value.then;
+      return new Promise((resolve) => {
+        then(resolve);
+      });
+    } else if (value) {
+      return new Promise((resolve) => resolve(value));
+    } else {
+      return new Promise((resolve) => resolve());
+    }
+  }
+  static reject(value) {
+    if (
+      value &&
+      typeof value === "object" &&
+      typeof value.then === "function"
+    ) {
+      let then = value.then;
+      return new Promise((resolve, reject) => {
+        then(reject);
+      });
+    } else {
+      return new Promise((resolve, reject) => reject(value));
+    }
+  }
+  static all(promises) {
+    return new Promise((resolve, reject) => {
+      let fulfilledCount = 0;
+      const itemNum = promises.length;
+      const rets = Array.from({ length: itemNum });
+      promises.forEach((promise, index) => {
+        Promise.resolve(promise).then(
+          (result) => {
+            fulfilledCount++;
+            rets[index] = result;
+            if (fulfilledCount === itemNum) {
+              resolve(rets);
+            }
+          },
+          (reason) => reject(reason)
+        );
+      });
+    });
+  }
+  static race(promises) {
+    return new Promise(function (resolve, reject) {
+      for (let i = 0; i < promises.length; i++) {
+        Promise.resolve(promises[i]).then(
+          function (value) {
+            return resolve(value);
+          },
+          function (reason) {
+            return reject(reason);
+          }
+        );
+      }
+    });
+  }
+  _handle(callback) {
+    if (this.state === "pending") {
+      this.callbacks.push(callback);
+      return;
+    }
+
+    let cb =
+      this.state === "fulfilled" ? callback.onFulfilled : callback.onRejected;
+
+    if (!cb) {
+      //如果then中没有传递任何东西
+      cb = this.state === "fulfilled" ? callback.resolve : callback.reject;
+      cb(this.value);
+      return;
+    }
+
+    let ret;
+
+    try {
+      ret = cb(this.value);
+      cb = this.state === "fulfilled" ? callback.resolve : callback.reject;
+    } catch (error) {
+      ret = error;
+      cb = callback.reject;
+    } finally {
+      cb(ret);
+    }
+  }
+  _resolve(value) {
+    if (this.state !== "pending") return;
+    if (value && (typeof value === "object" || typeof value === "function")) {
+      var then = value.then;
+      if (typeof then === "function") {
+        then.call(value, this._resolve.bind(this), this._reject.bind(this));
+        return;
+      }
+    }
+
+    this.state = "fulfilled"; //改变状态
+    this.value = value; //保存结果
+    this.callbacks.forEach((callback) => this._handle(callback));
+  }
+  _reject(error) {
+    if (this.state !== "pending") return;
+    this.state = "rejected";
+    this.value = error;
+    this.callbacks.forEach((callback) => this._handle(callback));
+  }
+}
+ */
+
+/**
+ *
+ * @param {Array} arr 输入数组
+ * @param {Number} index 要删除第几位
+ * @param {Number} count 要删除几位
+ */
+const delArrSomeIndexData = (arr, index, count) => {
+  let idx = index - 1;
+  while (arr.length > 1) {
+    if (idx + count >= arr.length) {
+      arr.splice(idx);
+      arr.splice(0, idx + count - arr.length + 1);
+    } else {
+      arr.splice(idx, count);
+    }
+    idx = (idx + index - 1) % arr.length;
+    console.log(arr, idx);
+  }
+  console.log("del", arr);
+  return arr;
+};
+delArrSomeIndexData([1, 2, 3, 4, 5], 2, 1);
+
+// 最大子段和
+const maxSum = (arr) => {
+  let current = 0;
+  let sum = 0;
+  for (let i = 0, ilen = arr.length; i < ilen; i++) {
+    if (current > 0) {
+      current += arr[i];
+    } else {
+      current = arr[i];
+    }
+
+    if (current > sum) {
+      sum = current;
+    }
+  }
+  console.log("max sum", sum);
+  return sum;
+};
+
+maxSum([1, 2, -1, 3, -8, -4]);
+
+const findSubstr = (str1, str2) => {
+  if (str1.length > str2.length) {
+    [str1, str2] = [str2, str1];
+  }
+  const len1 = str1.length;
+  for (let j = len1; j > 0; j--) {
+    for (let i = 0; i < len1 - j; i++) {
+      const current = str1.substr(i, j);
+      if (str2.indexOf(current) >= 0) {
+        return current;
+      }
+    }
+  }
+  return "";
+};
+
+console.log(findSubstr("aaa3333", "baa333cc"));
+console.log(findSubstr("baa333ccX3333333x", "aaaX3333--"));
+
+function lcs(str1, str2) {
+  const len1 = str1.length;
+  const len2 = str2.length;
+  const dp = [new Array(len2 + 1).fill(0)];
+  for (let i = 1; i <= len1; i++) {
+    dp[i] = [0];
+    for (let j = 1; j <= len2; j++) {
+      if (str1[i - 1] === str2[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+  return dp[len1][len2];
+}
+console.log(lcs("ABCBDAB", "BDCABA"));
+
+function loneSubStr(s) {
+  const arr = s.split("");
+  const len = arr.length;
+  if (len === 1) return 1;
+  let maxLen = 0;
+  for (let i = 0; i < len - 1; i++) {
+    let str = arr[i];
+    for (let j = i + 1; j < len; j++) {
+      if (str.indexOf(arr[j]) !== -1) {
+        maxLen = str.length > maxLen ? str.length : maxLen;
+        break;
+      }
+      str += arr[j];
+      maxLen = str.length > maxLen ? str.length : maxLen;
+      break;
+    }
+  }
+  return maxLen;
+}
+console.log(loneSubStr("abcabcbb"));
+
+function longFirstStr(strs) {
+  if (strs === null || strs.length === 0) return "";
+  let prevs = strs[0];
+  for (let i = 0, ilen = strs.length; i < ilen; i++) {
+    let j = 0;
+    for (; j < prevs.length && j < strs[i].length; j++) {
+      if (prevs.charAt(j) !== strs[i].charAt(j)) break;
+    }
+    prevs = prevs.substr(0, j);
+    if (prevs === "") return "";
+  }
+  return prevs;
+}
+
+function formatNum(...nums) {
+  const arr = nums.sort((a, b) => a - b);
+  const len = arr.length;
+  let idx = 0;
+  let temp = [[arr[0]]];
+  for (let i = 1; i < len; i++) {
+    if (arr[i] - 1 === arr[i - 1]) {
+      temp[idx].push(arr[i]);
+    } else {
+      temp[++idx] = [arr[i]];
+    }
+  }
+  for (let j = 0, jlen = temp.length; j < jlen; j++) {
+    const len = temp[j].length;
+    if (len > 1) {
+      temp[j] = `${temp[j][0]}->${temp[j][len - 1]}`;
+    } else {
+      temp[j] = `${temp[j][0]}`;
+    }
+  }
+  console.log(temp.join(","));
+}
+formatNum(1, 3, 4, 5, 7, 8, 9, 10, 13, 15, 16);
+
+function permute(...nums) {
+  const res = [];
+  nums.sort((a, b) => a - b);
+  find(nums, []);
+  return res;
+  function find(nums, temp) {
+    const len = nums.length;
+    if (nums.length === 0) {
+      res.push(temp.slice());
+    }
+    for (let i = 0; i < len; i++) {
+      temp.push(nums[i]);
+      const copy = nums.slice();
+      copy.splice(i, 1);
+      find(copy, temp);
+      temp.pop();
+    }
+  }
+}
+
+console.log(permute(1));
+console.log(permute(1, 2, 3));
+
+function trans(str) {
+  if (typeof str !== "string") return "";
+  let len = str.length;
+  if (len < 2) return str;
+  let idx = 1;
+  let nums = 1;
+  let res = str[0];
+  let last = res;
+  while (idx < len) {
+    if (str[idx] === last) {
+      nums++;
+      if (idx === len - 1) {
+        res = res + nums;
+        break;
+      }
+    } else {
+      res = res + (nums > 1 ? nums : "") + str[idx];
+      last = str[idx];
+      nums = 1;
+    }
+    idx++;
+  }
+  return res;
+}
+console.log(trans("aaabcccaa"));
