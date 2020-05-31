@@ -1,23 +1,35 @@
-- [HTTP 核心问题](#http-%e6%a0%b8%e5%bf%83%e9%97%ae%e9%a2%98)
-  - [HTTP 版本](#http-%e7%89%88%e6%9c%ac)
+- [HTTP 核心问题](#http-核心问题)
+  - [OSI 七层模型](#osi-七层模型)
+  - [HTTP 版本](#http-版本)
   - [HTTP-CODE](#http-code)
   - [HTTP header](#http-header)
   - [HTTP method](#http-method)
-  - [HTTP 请求/响应报文](#http-%e8%af%b7%e6%b1%82%e5%93%8d%e5%ba%94%e6%8a%a5%e6%96%87)
+  - [HTTP 请求/响应报文](#http-请求响应报文)
+  - [简单请求 🆚 复杂请求](#简单请求--复杂请求)
   - [HTTPS](#https)
   - [TCP](#tcp)
-    - [TCP 三次握手](#tcp-%e4%b8%89%e6%ac%a1%e6%8f%a1%e6%89%8b)
-    - [TCP 四次挥手](#tcp-%e5%9b%9b%e6%ac%a1%e6%8c%a5%e6%89%8b)
-    - [TLS 握手](#tls-%e6%8f%a1%e6%89%8b)
-    - [websocket 握手](#websocket-%e6%8f%a1%e6%89%8b)
+    - [TCP 三次握手](#tcp-三次握手)
+    - [TCP 四次挥手](#tcp-四次挥手)
+    - [TLS 握手](#tls-握手)
+    - [websocket 握手](#websocket-握手)
     - [DNS](#dns)
   - [XMLHttpRequest](#xmlhttprequest)
   - [Fetch](#fetch)
-  - [问题](#%e9%97%ae%e9%a2%98)
+  - [问题](#问题)
 
 # HTTP 核心问题
 
 > 超文本传输协议（HyperText Transfer Protocol），应用层协议，无状态。
+
+## OSI 七层模型
+
+1. 应用层 - HTTP FTP SMTP
+2. 表示层 - 加解密压缩 LPX
+3. 会话层 - SSL TLS
+4. 传输层 - TCP UDP
+5. 网络层 - IP
+6. 数据链路层
+7. 物理层
 
 ## HTTP 版本
 
@@ -145,6 +157,23 @@
    - 响应行： HTTP 版本 状态码 描述信息
    - 响应头部： Server Date Transfer-Encoding 等字段
    - 响应体
+
+## 简单请求 🆚 复杂请求
+
+**简单请求：**
+
+1. 请求方式为 HEAD、Get、Post
+2. http 头信息不超出一下内容：
+   1. Accept、Accept-Language、Content-Language、Last-Event-ID
+   2. Content-Type 包含：
+      1. application/x-www-form-urlencoded
+      2. multipart/form-data
+      3. text/plain
+
+**复杂请求**
+
+1. PUT 或 Delete 方法，Content-Type 为 Application/json
+2. CORS 请求，正式通信前，会增加一次预检请求 preflight
 
 ## HTTPS
 
@@ -300,14 +329,60 @@ xhr.send(data) // 发送数据
 
 ## Fetch
 
+```
+fetch(url, {
+   body: JSON.stringify(data),
+   cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+   credentials: 'include', // include, same-origin
+   headers: {
+      'user-agent': 'Mozilla/4.0',
+      'content-type': 'application/json'
+   },
+   method: 'POST', // POST GET DELETE PUT
+   mode: 'cors', //cors no-cors same-origin
+   redirect: 'follow', // manual, follow
+   referrer: 'no-referrer' // no-referrer client
+}).then(response => response.json())
+  .then(data => console.log(data))
+  .catch(e => console.log("Oops, error", e))
+```
+
 1. fetch 带 cookie `credentials: "include"`
 2. fetch 条 post 请求的时候，总是发送两次请求，第一次返回 204
    fetch 第一次发送了 options 请求，询问服务器是否支持请求头，如果支持第二次发送请求。
 
+**fetch 超时设置：**
+
 ```
-fetch(url).then(response => response.json())
-  .then(data => console.log(data))
-  .catch(e => console.log("Oops, error", e))
+function timeoutPromise(timeout){
+   return new Promise((resolve, reject) => setTimeout(resolve, timeout))
+}
+function requestPromise(url){
+   return fetch(url)
+}
+Promise.race([timeoutPromise, requestPromise])
+   .then(res => {})
+   .catch(err => {})
+```
+
+**fetch 取消操作：**
+
+> AbortController 用于手动终止一个或多个 DOM 请求，通过该对象的 AbortSignal 注入的 Fetch 的请求中。
+
+```
+let controller = new AbortController()
+let signal = controller.signal
+function timeoutPromise(timeout){
+   return new Promise((resolve, reject) => setTimeout(() => {
+      resolve(new Response("timeout", { status: 504, statusText: "timeout " }));
+      controller.abort()
+   }, timeout))
+}
+function requestPromise(url){
+   return fetch(url, {
+      signal
+   })
+}
 ```
 
 ## 问题
