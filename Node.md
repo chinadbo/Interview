@@ -1,10 +1,10 @@
 - [NodeJS](#nodejs)
-- [V8 内存管理模型](#v8-%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%e6%a8%a1%e5%9e%8b)
-  - [事件循环](#%e4%ba%8b%e4%bb%b6%e5%be%aa%e7%8e%af)
+- [V8 内存管理模型](#v8-内存管理模型)
+  - [事件循环](#事件循环)
     - [Event Loop](#event-loop)
-    - [事件循环原理](#%e4%ba%8b%e4%bb%b6%e5%be%aa%e7%8e%af%e5%8e%9f%e7%90%86)
-    - [process.nextTick 🆚 setImmediate](#processnexttick-%f0%9f%86%9a-setimmediate)
-- [进程 Process](#%e8%bf%9b%e7%a8%8b-process)
+    - [事件循环原理](#事件循环原理)
+    - [process.nextTick 🆚 setImmediate](#processnexttick--setimmediate)
+- [进程 Process](#进程-process)
   - [Cluster](#cluster)
 - [Koa](#koa)
 
@@ -154,15 +154,47 @@ if (cluster.isMaster) {
 
 ```
 function compose(middlewares){
-   return function() {
-      return dispatch(0)
-      function dispatch(i) {
-         const fn = middlewares[i]
-         if(!fn) return
-         return fn(function next() {
-            return dispatch(i+1)
-         })
+   return ctx => {
+      const dispatch = i => {
+         const middleware = middlewares[i]
+         if(!middleware) return
+         return middleware(ctx, () => dispatch(i+1))
       }
+      return dispatch(0)
+   }
+}
+```
+
+**Context: ctx**
+
+```
+class Context{
+   constructor(req, res) {
+      this.req=req
+      this.res=res
+   }
+}
+```
+
+**Koa-mini**
+
+```
+class Application() {
+   constructor() {
+      this.middlewares = []
+   }
+   listen(...args) {
+      const server = http.createServer(async (req,res) => {
+         const ctx = new Context(req,res)
+         const fn = compose(this.middlewares)
+         await fn(ctx)
+
+         ctx.res.end(ctx.body)
+      })
+      server.listen(...args)
+   }
+   use(middleware){
+      this.middlewares.push(middleware)
    }
 }
 ```
