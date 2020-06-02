@@ -1,7 +1,8 @@
 - [Vue 3.0](#vue-30)
   - [MVVM](#mvvm)
   - [vdom diff](#vdom-diff)
-- [问题](#%e9%97%ae%e9%a2%98)
+- [问题](#问题)
+- [小程序](#小程序)
 
 ## Vue 3.0
 
@@ -212,3 +213,7 @@ Proxy
    ```
 8. 动态组件 `<component :is="SOMECOMPONENT' />`
 9. 缓存组件 `<keep-alive><comp /></keep-alive>`
+
+## 小程序
+
+![小程序](./assets/mini-program.jpg)
