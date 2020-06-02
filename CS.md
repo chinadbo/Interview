@@ -415,7 +415,7 @@ function quickSort(arr) {
   const pivot = arr[len-1]
   const left = []
   const right = []
-  for (let i = 0; i < len -1; i++) {
+  for (let i = 0; i < len - 1; i++) {
     if(arr[i] < pivot) {
       left.push(arr[i])
     } else {
@@ -845,16 +845,16 @@ function heapSort(nums) {
       const len = arr.length
       if(len === 1) return 1
       const maxLen = 0
-      for(let i=0;i<len-1;i++){
+      for(let i = 0; i < len-1; i++){
         let str = arr[i]
-        for(letj=i+1;j<len;j++){
-          if(str.indexOf(arr[j]) !=== -1) {
+        for(let j= i+1; j < len; j++){
+          if(str.indexOf(arr[j]) !== -1) {
             maxLen = str.length > maxLen ? str.length : maxLen
             break;
           }
           str += arr[j]
           maxLen = str.length > maxLen ? str.length : maxLen
-            break;
+          break;
         }
       }
       return maxLen
@@ -1181,18 +1181,13 @@ function heapSort(nums) {
     function RLR(root) {
       const arr = [];
       const res = [];
-      if (root) {
-        arr.push(root);
-      }
+      if(!root) return []
+      arr.push(root)
       while (arr.length) {
         const temp = arr.pop();
         res.push(temp.val);
-        if (temp.right) {
-          arr.push(temp.right);
-        }
-        if (temp.left) {
-          arr.push(temp.left);
-        }
+        temp.right && arr.push(temp.right);
+        temp.left && arr.push(temp.left);
       }
       return res;
     }
@@ -1218,18 +1213,14 @@ function heapSort(nums) {
     function LR(root) {
       const arr = [];
       const res = [];
+      if(!root) return []
       arr.push(root);
-      while (arr.length) {
-        const temp = arr.pop();
-        res.push(temp.val);
-        if (temp.left) {
-          arr.push(temp.left);
-        }
-        if (temp.right) {
-          arr.push(temp.right);
-        }
+      while(arr.length) {
+        const temp = arr.pop()
+        res.unshift(temp.val)
+        temp.left && arr.push(temp.left)
+        temp.right && arr.push(temp.right)
       }
-      return res.reverse();
     }
     ```
 
