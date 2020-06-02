@@ -378,19 +378,25 @@ FunctionExectionContext = {
    > 适用场景： 1. Search 联想搜索 2. window resize
 
    ```
-   function debounce(fn, wait = 50, immediate) {
+   function debounce(fn, wait = 50, immediate = false) {
      let timer = null
-     return function(...args) {
+     let result
+     const debounced = function(...args) {
        if(timer) clearTimeout(timer)
 
        if(immediate && !timer) {
          // 首次执行
-         fn.apply(this, args)
+         result = fn.apply(this, args)
        }
        timer = setTimeout(() => {
-         fn.apply(this, args)
+         result = fn.apply(this, args)
        }, wait)
      }
+     debounced.cancel = function(){
+       clearTimeout(timer)
+       timer = null
+     }
+     return debounced
    }
    const betterFn = debounce(() => console.log('fn excuted'), 1000, true)
    // 第一次触发scroll执行一次，后续只有在停止滚动1秒后才执行函数
