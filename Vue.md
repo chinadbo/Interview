@@ -205,14 +205,28 @@ Proxy
       }
    }
    ```
-7. 异步组件
+7. 非父子组件传值 EventBus
+
+   ```
+   // Bus.js
+   import Vue from 'vue'
+   export default new Vue()
+
+   // component
+   import Bus from './Bus.js'
+   Bus.$emit('getTarget', 'some value')
+
+   Bus.$on('getTarget' val => {})
+   ```
+
+8. 异步组件
    ```
    components: {
       componentA: () => import('./component/A')
    }
    ```
-8. 动态组件 `<component :is="SOMECOMPONENT' />`
-9. 缓存组件 `<keep-alive><comp /></keep-alive>`
+9. 动态组件 `<component :is="SOMECOMPONENT' />`
+10. 缓存组件 `<keep-alive><comp /></keep-alive>`
 
 ## 小程序
 
