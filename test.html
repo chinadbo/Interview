@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      .content {
+        width: 100%;
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: 300px;
+        grid-template-columns: 100px auto 100px;
+      }
+      .content div {
+        height: 100px;
+      }
+      .a {
+        background-color: slateblue;
+      }
+      .c {
+        background-color: green;
+      }
+      .b {
+        background-color: saddlebrown;
+      }
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .taiji {
+        margin-left: 200px;
+        width: 200px;
+        height: 200px;
+        display: flex;
+        /* background: seashell; */
+        animation: rotate 2s infinite linear;
+      }
+      .out {
+        height: 200px;
+        width: 100px;
+        position: relative;
+      }
+      .yin {
+        border-top-left-radius: 100px;
+        border-bottom-left-radius: 100px;
+        background-color: black;
+      }
+      .yang {
+        border-bottom-right-radius: 100px;
+        border-top-right-radius: 100px;
+        background-color: white;
+      }
+      .circle {
+        width: 100px;
+        height: 100px;
+        background: black;
+        border-radius: 50px;
+      }
+      .circle::after {
+        display: inline-block;
+        content: "";
+        width: 50px;
+        height: 50px;
+        background: black;
+        border-radius: 25px;
+        position: absolute;
+        top: 25px;
+        right: 25px;
+        z-index: 1;
+      }
+      .yin .circle {
+        position: absolute;
+        background: white;
+        top: 0;
+        right: -50px;
+      }
+      .yang .circle {
+        position: absolute;
+        bottom: 0;
+        left: -50px;
+      }
+      .yang .circle::after {
+        background: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      <div class="a">left</div>
+      <div class="b">main</div>
+      <div class="c">rigth</div>
+    </div>
+    <div class="taiji">
+      <div class="yin out">
+        <div class="circle"></div>
+      </div>
+      <div class="yang out">
+        <div class="circle"></div>
+      </div>
+    </div>
+    <script>
+      console.log(fun); // Reference Error
+      // 退出script
+      console.log(person);
+    </script>
+
+    <script>
+      console.log(person); // undefined
+
+      console.log(fun); // function fun(){}
+
+      var person = "Eric";
+
+      console.log(person); // Eric
+
+      function fun() {
+        console.log(person); // undefined
+        var person = "Tom";
+        console.log(person); // Tom
+      }
+
+      fun();
+
+      console.log(person); // Eric
+    </script>
+  </body>
+</html>

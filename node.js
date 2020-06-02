@@ -843,3 +843,342 @@ function trans(str) {
   return res;
 }
 console.log(trans("aaabcccaa"));
+
+function debounce(fn, wait, immediate = false) {
+  let timeout;
+  let result;
+  const debounced = function (...args) {
+    const _self = this;
+    if (timeout) clearTimeout(timeout);
+    if (immediate) {
+      const callNow = !timeout;
+      timeout = setTimeout(() => {
+        timeout = null;
+      }, wait);
+      if (callNow) {
+        result = fn.apply(_self, args);
+      }
+    } else {
+      timeout = setTimeout(() => {
+        result = fn.apply(_self, args);
+      }, wait);
+    }
+  };
+  debounced.cancel = function () {
+    clearTimeout(timeout);
+    timeout = null;
+  };
+  return debounced;
+}
+
+class Lazy {
+  constructor(name) {
+    this.name = name;
+    console.log(`My name is ${name}`);
+    this.queue = [];
+    setTimeout(() => this.next(), 0);
+  }
+  next() {
+    const fn = this.queue.shift();
+    fn && fn();
+  }
+  eat(food) {
+    const fn = () => {
+      console.log(`Eated food ${food}`);
+      this.next();
+    };
+    this.queue.push(fn);
+    return this;
+  }
+  sleep(time) {
+    const fn = () => {
+      setTimeout(() => {
+        console.log(`Sleeped ${time} times`);
+        this.next();
+      }, time);
+    };
+    this.queue.push(fn);
+    return this;
+  }
+  sleepFirst(time) {
+    const fn = () => {
+      setTimeout(() => {
+        console.log(`First sleeped ${time} times`);
+        this.next();
+      }, time);
+    };
+    this.queue.unshift(fn);
+    return this;
+  }
+}
+
+function lazyMan(name) {
+  return new Lazy(name);
+}
+lazyMan("ioodu").eat("apple").sleep(1000).sleepFirst(2000).eat("pinapple");
+
+/**
+{
+ type: 'h1',
+ props: {
+  className: "",
+  style: "",
+ },
+ children: [] // 嵌套节点
+}
+*/
+
+function create(vnode) {
+  const props = vnode.props || {};
+  const children = vnode.children || [];
+  if (typeof vnode !== "object") {
+    return document.createTextNode(vnode);
+  }
+  const el = document.createElement(vnode.type);
+  for (let attr in props) {
+    if (attr === "className") {
+      el.setAttribute("class", props[attr]);
+    } else if (attr === "htmlFor") {
+      el.setAttribute("for", props[attr]);
+    } else {
+      el.setAttribute(attr, props[attr]);
+    }
+  }
+  children.map(create).forEach(el.appendChild.bind(el));
+  return el;
+}
+
+/** binary tree
+       1
+  2          3
+4    5    6    7
+*/
+const root = {
+  val: 1,
+  left: {
+    val: 2,
+    left: {
+      val: 4,
+    },
+    right: {
+      val: 5,
+    },
+  },
+  right: {
+    val: 3,
+    left: {
+      val: 6,
+    },
+    right: {
+      val: 7,
+    },
+  },
+};
+
+// 递归
+// 先序
+function rlr(root) {
+  if (!root) return "";
+  console.log(root.val);
+  rlr(root.left);
+  rlr(root.right);
+}
+
+// 中序
+function lrr(root) {
+  if (!root) return "";
+  lrr(root.left);
+  console.log(root.val);
+  lrr(root.right);
+}
+
+// 后序
+function lr(root) {
+  if (!root) return "";
+  lr(root.left);
+  lr(root.right);
+  console.log(root.val);
+}
+
+// 非递归前序遍历
+function RLR(root) {
+  const arr = [];
+  const res = [];
+  if (root) {
+    arr.push(root);
+  }
+  while (arr.length) {
+    const temp = arr.pop();
+    res.push(temp.val);
+    if (temp.right) {
+      arr.push(temp.right);
+    }
+    if (temp.left) {
+      arr.push(temp.left);
+    }
+  }
+  return res;
+}
+
+// 非递归中序遍历
+function LRR(root) {
+  const arr = [];
+  const res = [];
+  while (true) {
+    while (root) {
+      arr.push(root);
+      root = root.left;
+    }
+    if (arr.length === 0) break;
+    const temp = arr.pop();
+    res.push(temp.val);
+    root = temp.right;
+  }
+  return res;
+}
+
+// 非递归后序遍历
+function LR(root) {
+  const arr = [];
+  const res = [];
+  arr.push(root);
+  while (arr.length) {
+    const temp = arr.pop();
+    res.push(temp.val);
+    if (temp.left) {
+      arr.push(temp.left);
+    }
+    if (temp.right) {
+      arr.push(temp.right);
+    }
+  }
+  return res.reverse();
+}
+
+function dfs(root) {
+  const res = [];
+  const arr = [];
+  if (!root) return [];
+  arr.push(root);
+  while (arr.length) {
+    const temp = arr.pop();
+    res.unshift(temp.val);
+    temp.left && arr.push(temp.left);
+    temp.right && arr.push(temp.right);
+  }
+  return res;
+}
+
+console.log(dfs(root));
+
+function intersect(nums1, nums2) {
+  nums1 = nums1.sort((a, b) => a - b);
+  nums2 = nums2.sort((a, b) => a - b);
+  const len1 = nums1.length;
+  const len2 = nums2.length;
+  let i = 0;
+  let j = 0;
+  let k = 0;
+  while (i < len1 && j < len2) {
+    if (nums1[i] < nums2[j]) {
+      i++;
+    } else if (nums1[i] > nums2[j]) {
+      j++;
+    } else {
+      nums1[k++] = nums1[i];
+      i++;
+      j++;
+    }
+  }
+  return nums1.slice(0, k);
+}
+console.log(intersect([1, 3, 2, 4, 5, 2], [2, 3, 4, 2]));
+
+function triangleNumer(...nums) {
+  const len = nums.length;
+  if (len < 3) return 0;
+  let res = 0;
+  nums.sort((a, b) => a - b);
+  for (let i = len - 1; i > 1; i--) {
+    let l = 0;
+    let r = i - 1;
+    while (l < r) {
+      if (nums[l] + nums[r] > nums[i]) {
+        res += r - l;
+        r--;
+      } else {
+        l++;
+      }
+    }
+  }
+  return res;
+}
+
+console.log(triangleNumer(3, 4, 5, 6));
+/**
+// koa-mini
+const http = require("http");
+// Context
+class Context {
+  constructor(req, res) {
+    this.req = req;
+    this.res = res;
+  }
+}
+function compose(middlewares) {
+  return (ctx) => {
+    const dispatch = (i) => {
+      const middleware = middlewares[i];
+      if (!middleware) return;
+      return middleware(ctx, () => dispatch(i + 1));
+    };
+    return dispatch(0);
+  };
+}
+class Application {
+  constructor() {
+    this.middleware = [];
+  }
+  listen(...args) {
+    const server = http.createServer(async (req, res) => {
+      const ctx = new Context(req, res);
+      const fn = compose(this.middlewares);
+      await fn(ctx);
+      ctx.res.end(ctx.body);
+    });
+    server.listen(...args);
+  }
+  use(middleware) {
+    this.middlewares.push(middleware);
+  }
+}
+
+// test
+const app = new Application();
+app.use(async (ctx) => {
+  ctx.body = "hello world";
+  await next();
+});
+app.use(async (ctx) => {
+  ctx.body = "hello world 2";
+  await next();
+});
+app.listen(8080);
+ */
+
+function isValidSortPoke(...nums) {
+  const repeat = new Set();
+  let min = 14;
+  let max = 0;
+  for (let i = 0, ilen = nums.length; i < ilen; i++) {
+    if (nums[i] === 0) continue;
+    max = Math.max(nums[i], max);
+    min = Math.min(nums[i], min);
+    if (repeat.has(nums[i])) return false;
+    repeat.add(nums[i]);
+  }
+  console.log(repeat, max, min);
+  return max - min < 5;
+}
+
+console.log("isvalidPoke", isValidSortPoke(1, 2, 3, 4, 5));
