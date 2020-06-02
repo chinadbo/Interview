@@ -528,6 +528,32 @@ function heapSort(nums) {
    )
    ```
 
+   双指针+归并排序
+
+   ```
+   function intersect(nums1, nums2) {
+      nums1 = nums1.sort((a, b) => a - b);
+      nums2 = nums2.sort((a, b) => a - b);
+      const len1 = nums1.length;
+      const len2 = nums2.length;
+      let i = 0;
+      let j = 0;
+      let k = 0;
+      while (i < len1 && j < len2) {
+        if (nums1[i] < nums2[j]) {
+          i++;
+        } else if (nums1[i] > nums2[j]) {
+          j++;
+        } else {
+          nums1[k++] = nums1[i];
+          i++;
+          j++;
+        }
+      }
+      return nums1.slice(0, k);
+    }
+   ```
+
 2. 字符串的大小写取反
    ```
    const processStr = str => str.split('').map(item => item === item.toUpperCase() ? item.toLowerCase() : item.toUpperCase()).join('')
@@ -947,7 +973,7 @@ function heapSort(nums) {
           }, time)
         }
         this.queue.unshift(fn)
-        retur this
+        return this
       }
       sleep(time) {
         const fn = () => {
@@ -1095,6 +1121,160 @@ function heapSort(nums) {
         }
       }
     }
+    ```
+34. 二叉树
+
+    ```
+    /** binary tree
+          1
+      2          3
+    4    5    6    7
+    */
+    const root = {
+      val: 1,
+      left: {
+        val: 2,
+        left: {
+          val: 4,
+        },
+        right: {
+          val: 5,
+        },
+      },
+      right: {
+        val: 3,
+        left: {
+          val: 6,
+        },
+        right: {
+          val: 7,
+        },
+      },
+    };
+
+    // 递归
+    // 先序
+    function rlr(root) {
+      if (!root) return "";
+      console.log(root.val);
+      rlr(root.left);
+      rlr(root.right);
+    }
+
+    // 中序
+    function lrr(root) {
+      if (!root) return "";
+      lrr(root.left);
+      console.log(root.val);
+      lrr(root.right);
+    }
+
+    // 后序
+    function lr(root) {
+      if (!root) return "";
+      lr(root.left);
+      lr(root.right);
+      console.log(root.val);
+    }
+
+    // 非递归前序遍历
+    function RLR(root) {
+      const arr = [];
+      const res = [];
+      if (root) {
+        arr.push(root);
+      }
+      while (arr.length) {
+        const temp = arr.pop();
+        res.push(temp.val);
+        if (temp.right) {
+          arr.push(temp.right);
+        }
+        if (temp.left) {
+          arr.push(temp.left);
+        }
+      }
+      return res;
+    }
+
+    // 非递归中序遍历
+    function LRR(root) {
+      const arr = [];
+      const res = [];
+      while (true) {
+        while (root) {
+          arr.push(root);
+          root = root.left;
+        }
+        if (arr.length === 0) break;
+        const temp = arr.pop();
+        res.push(temp.val);
+        root = temp.right;
+      }
+      return res;
+    }
+
+    // 非递归后序遍历
+    function LR(root) {
+      const arr = [];
+      const res = [];
+      arr.push(root);
+      while (arr.length) {
+        const temp = arr.pop();
+        res.push(temp.val);
+        if (temp.left) {
+          arr.push(temp.left);
+        }
+        if (temp.right) {
+          arr.push(temp.right);
+        }
+      }
+      return res.reverse();
+    }
+    ```
+
+35. 有效三角形的个数
+    ```
+    function triangleNumer(...nums) {
+      const len = nums.length;
+      if (len < 3) return 0;
+      let res = 0;
+      nums.sort((a, b) => a - b);
+      for (let i = len - 1; i > 1; i--) {
+        let l = 0;
+        let r = i - 1;
+        while (l < r) {
+          if (nums[l] + nums[r] > nums[i]) {
+            res += r - l;
+            r--;
+          } else {
+            l++;
+          }
+        }
+      }
+      return res;
+    }
+    ```
+36. 判断是扑克连子
+
+    ```
+    // 从扑克牌中随机抽5张牌，判断是不是一个顺子，即这5张牌是不是连续的。2～10为数字本身，A为1，J为11，Q为12，K为13，而大、小王为 0 ，可以看成任意数字。A 不能视为 14。
+
+    const isStraight = function(nums) {
+        const repeat = new Set()
+        let min = 14
+        let max = 0
+        const len = nums.length
+        for(let i = 0; i < len; i++){
+            const num = nums[i]
+            if(num === 0) continue // 判断是否大小王，跳过
+            max = Math.max(max, num) // 最大牌
+            min = Math.min(min, num) // 最小牌
+            if(repeat.has(num)) return false // 有重复，必定不是连子
+            repeat.add(num) // 添加至Set
+        }
+        return max - min < 5 // 最大牌-最小牌<5 构成连子
+    };
     ```
 
 ### 正则表达式
