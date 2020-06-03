@@ -935,7 +935,7 @@ function heapSort(nums) {
       return prevs;
     }
     ```
-26. 斐波拉
+26. 斐波那契
     ```
     const cache = []
     function fib(n) {
@@ -946,6 +946,20 @@ function heapSort(nums) {
       }
       cache.push(fib(n-1) + fib(n-2))
       return cache[n]
+    }
+    ```
+    青蛙每次跳一阶或两阶台阶，n 阶台阶多少种方式
+    ```
+    function climbStairs(n) {
+      if(n ===1 ) return 1
+      let first = 1
+      let second = 2
+      for(let i = 3; i <= n; i++) {
+        let third = first + second
+        first = second
+        second = third
+      }
+      return second
     }
     ```
 27. 链式调用
@@ -1222,6 +1236,54 @@ function heapSort(nums) {
         temp.right && arr.push(temp.right)
       }
     }
+
+    // 层序遍历
+    function levelDfs(root){
+      const arr = []
+      const res = []
+      if(!root) return []
+      arr.push(root)
+      let level = 0
+      while(arr.length) {
+        let len = arr.length
+        res[level] = []
+        for(let i = 0; i < len; i++) {
+          const temp = arr.shift()
+          res[level].push(temp.val)
+          temp.left && arr.push(temp.left)
+          temp.right && arr.push(temp.right)
+        }
+        level++
+      }
+      return res
+    }
+
+    // 路径遍历
+    // [ '1->2->4', '1->2->5', '1->3->6', '1->3->7' ]
+    function treeDfs(root) {
+      if(!root) return []
+      const res = []
+      const arr = []
+      const path = []
+      arr.push(root)
+      path.push(root.val.toString())
+      while(arr.length){
+        const temp = arr.pop()
+        const cur = path.pop()
+        if(!temp.left && !temp.right) {
+          res.unshift(cur)
+        }
+        if(temp.left) {
+          arr.push(temp.left)
+          path.push(cur + '->' + temp.left.val)
+        }
+        if(temp.right) {
+          arr.push(temp.right)
+          path.push(cur + '->' + temp.right.val)
+        }
+      }
+      return res
+    }
     ```
 
 35. 有效三角形的个数
@@ -1266,6 +1328,37 @@ function heapSort(nums) {
         }
         return max - min < 5 // 最大牌-最小牌<5 构成连子
     };
+    ```
+
+37. 升序二维数组 二分查找
+    ```
+    // O(mlogn)
+    function find(target, arr){
+      const len = arr.length
+      for(let i = 0; i < len; i++) {
+        let l = 0
+        let r = arr[i].length
+        while(l<r){
+          const mid = Math.floor((l+r)/2)
+          if(target === arr[i][mid]) return true
+          else if(target > arr[i][mid]) l=mid+1
+          else r=mid
+        }
+      }
+      return false
+    }
+    ```
+38. 质数
+    ```
+    function isPrime(n) {
+      if(n <= 3) return n>1
+      else if(n%2 === 0) return false
+      const sq = Math.sqrt(n)
+      for(let i = 3; i <= sq; i+=2){
+        if(n%i === 0) return false
+      }
+      return true
+    }
     ```
 
 ### 正则表达式
