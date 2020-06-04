@@ -1,32 +1,33 @@
 - [React](#react)
   - [Redux](#redux)
-    - [三大原则](#%e4%b8%89%e5%a4%a7%e5%8e%9f%e5%88%99)
+    - [三大原则](#三大原则)
       - [Action](#action)
       - [Reducer](#reducer)
       - [Store](#store)
-    - [数据流](#%e6%95%b0%e6%8d%ae%e6%b5%81)
-    - [Redux 中间件](#redux-%e4%b8%ad%e9%97%b4%e4%bb%b6)
-    - [问题](#%e9%97%ae%e9%a2%98)
+    - [数据流](#数据流)
+    - [Redux 中间件](#redux-中间件)
+    - [问题](#问题)
+    - [Redux 优化](#redux-优化)
   - [React-Router](#react-router)
-    - [主要组件](#%e4%b8%bb%e8%a6%81%e7%bb%84%e4%bb%b6)
+    - [主要组件](#主要组件)
     - [SSR](#ssr)
-    - [代码分割 code splitting](#%e4%bb%a3%e7%a0%81%e5%88%86%e5%89%b2-code-splitting)
+    - [代码分割 code splitting](#代码分割-code-splitting)
     - [ScrollToTop](#scrolltotop)
     - [API](#api)
-    - [问题](#%e9%97%ae%e9%a2%98-1)
+    - [问题](#问题-1)
   - [React](#react-1)
     - [Fiber](#fiber)
-    - [React 事件处理系统](#react-%e4%ba%8b%e4%bb%b6%e5%a4%84%e7%90%86%e7%b3%bb%e7%bb%9f)
-    - [Reconciliation 协调(一致性比较)](#reconciliation-%e5%8d%8f%e8%b0%83%e4%b8%80%e8%87%b4%e6%80%a7%e6%af%94%e8%be%83)
-      - [Diff 算法](#diff-%e7%ae%97%e6%b3%95)
+    - [React 事件处理系统](#react-事件处理系统)
+    - [Reconciliation 协调(一致性比较)](#reconciliation-协调一致性比较)
+      - [Diff 算法](#diff-算法)
       - [VDOM](#vdom)
-    - [性能优化](#%e6%80%a7%e8%83%bd%e4%bc%98%e5%8c%96)
-    - [组件生命周期](#%e7%bb%84%e4%bb%b6%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f)
-      - [挂载](#%e6%8c%82%e8%bd%bd)
-      - [更新](#%e6%9b%b4%e6%96%b0)
-      - [卸载](#%e5%8d%b8%e8%bd%bd)
-      - [错误处理](#%e9%94%99%e8%af%af%e5%a4%84%e7%90%86)
-    - [问题](#%e9%97%ae%e9%a2%98-2)
+    - [性能优化](#性能优化)
+    - [组件生命周期](#组件生命周期)
+      - [挂载](#挂载)
+      - [更新](#更新)
+      - [卸载](#卸载)
+      - [错误处理](#错误处理)
+    - [问题](#问题-2)
 
 # React
 
@@ -161,6 +162,47 @@ const doNothingMidddleware = (dispatch, getState) => next => action => next(acti
    当数据存在 ID、嵌套或者关联关系时，应当以 “范式化” 形式存储：对象只能存储一次，ID 作为键值，对象间通过 ID 相互引用。将 store 类比于数据库，每一项都是独立的 “表”。
 5. Redux 如何实现多个组件之间的通信，多个组件使用相同状态如何进行管理
    所有的数据全部最后都在一个 state tree 上，实现多组件通信，就需要实现，一份数据多组件接收，同时组件之间发出的 action，最后需要通信的组件接收他的 state。
+
+### Redux 优化
+
+1. 使用索引存储数据，使用选择器访问数据
+   ```
+   {usersById: { 123: {id: 123, name: 'Ioodu'}}}
+   ...
+   // 索引（唯一ID）访问数据
+   const user = state.usersById[userId]
+   // 选择器访问数据
+   const getUsers = ({ usersById}) => {
+     return Object.keys(usersById).map(id => usersById[id])
+   }
+   ```
+2. 将标准状态与视图和编辑状态分区分开
+   ```
+   // 代码的组织和可维护性上带来更好的体验
+   {
+    "usersById": {
+        123: {
+          id: 123,
+          name: "Jane Doe",
+          email: "jdoe@example.com",
+          phone: "555-555-5555",
+          ...
+        },
+        ...
+      },
+      "editingUsersById": {
+        123: {
+          id: 123,
+          name: "Jane Smith",
+          email: "jsmith@example.com",
+          phone: "555-555-5555",
+        }
+      }
+    }
+   ```
+3. 在视图间共享状态
+   - 顶级/公共 reducer
+4. 跨状态的重用 reducer
 
 ## React-Router
 
