@@ -132,15 +132,53 @@ function removeEvent(element, event, handler) {
      this.brand = 'BMW'
    }
    ```
-4. 单例模式（Singleton Pattern）
+4. 策略模式
+
+   > 策略模式的定义：定义一系列的算法，把他们一个个封装起来，并且使他们可以相互替换。
+
+   策略模式的目的就是将算法的使用算法的实现分离开来。
+   一个基于策略模式的程序至少由两部分组成。第一个部分是一组策略类（可变），策略类封装了具体的算法，并负责具体的计算过程。第二个部分是环境类 Context（不变），Context 接受客户的请求，随后将请求委托给某一个策略类。要做到这一点，说明 Context 中要维持对某个策略对象的引用。
+
    ```
+   /*策略类*/
+    const levelOBJ = {
+        "A": function(money) {
+            return money * 4;
+        },
+        "B" : function(money) {
+            return money * 3;
+        },
+        "C" : function(money) {
+            return money * 2;
+        }
+    };
+    /*环境类*/
+    const calculateBouns =function(level,money) {
+        return levelOBJ[level](money);
+    };
+    console.log(calculateBouns('A',10000)); // 40000
+   ```
+
+5) 单例模式（Singleton Pattern）
+   > 单例模式的定义：保证一个类仅有一个实例，并提供一个访问它的全局访问点。实现的方法为先判断实例存在与否，如果存在则直接返回，如果不存在就创建了再返回，这就确保了一个类只有一个实例对象。
+   > 适用场景：一个单一对象。比如：弹窗，无论点击多少次，弹窗只应该被创建一次。
+   ```
+   class CreateUser{
+     constructor(name) {
+       this.name=name
+       this.getName()
+     }
+     getName() {
+       return this.name
+     }
+   }
    const SingleService = (function(){
-     function service(){}
-     let singleService
-     return {
-       getSetvice:function() {
-         if(singleService) return singleService
+     let instance = null
+     return function(name) {
+       if(!instance) {
+         instance = new CreateUser(name)
        }
+       return instance
      }
    })()
    ```
@@ -1293,7 +1331,55 @@ function heapSort(nums) {
     }
     ```
 
-35. 有效三角形的个数
+35. 多叉树的深度
+    ```
+    function getMaxFloor(tree) {
+      let max = 0;
+      function each(data, floor) {
+        data.forEach((e) => {
+          e.floor = floor;
+          if (floor > max) {
+            max = floor;
+          }
+          if (e.children.length) {
+            each(e.children, floor + 1);
+          }
+        });
+      }
+      each(tree, 1);
+      return max;
+    }
+    ```
+    ```
+    function getTreeDeep(tree) {
+      let deep = 0
+      tree.children && tree.children.forEach(item => {
+        if(item.children) {
+          deep = Math.max(deep, getTreeDeep(item.children) + 1)
+        } else {
+          deep = Math.max(deep, 1)
+        }
+      })
+      return deep
+    }
+    ```
+36. 多叉树的广度
+
+    ```
+    function getTreeExtend(tree) {
+      let extend = 0
+      tree.forEach(item => {
+        if(item.children) {
+          extend += getTreeExtend(item.children)
+        } else {
+          extend += 1
+        }
+      })
+      return extend
+    }
+    ```
+
+37. 有效三角形的个数
     ```
     function triangleNumer(...nums) {
       const len = nums.length;
@@ -1315,7 +1401,7 @@ function heapSort(nums) {
       return res;
     }
     ```
-36. 判断是扑克连子
+38. 判断是扑克连子
 
     ```
     // 从扑克牌中随机抽5张牌，判断是不是一个顺子，即这5张牌是不是连续的。2～10为数字本身，A为1，J为11，Q为12，K为13，而大、小王为 0 ，可以看成任意数字。A 不能视为 14。
@@ -1337,7 +1423,7 @@ function heapSort(nums) {
     };
     ```
 
-37. 升序二维数组 二分查找
+39. 升序二维数组 二分查找
     ```
     // O(mlogn)
     function find(target, arr){
@@ -1355,7 +1441,7 @@ function heapSort(nums) {
       return false
     }
     ```
-38. 质数
+40. 质数
     ```
     function isPrime(n) {
       if(n <= 3) return n>1
@@ -1365,6 +1451,83 @@ function heapSort(nums) {
         if(n%i === 0) return false
       }
       return true
+    }
+    ```
+41. 字符串解码
+    ```
+    // 'HG[3|B[2|CA]]F'
+    // --->
+    // 'HGBCACABCACABCACAF'
+    function decodeStr(str) {
+      let i = 0;
+      let x = -1,
+        y = -1,
+        z = -1;
+      const len = str.length;
+      while (i < len) {
+        if (str[i] === "[") {
+          x = i;
+        } else if (str[i] === "|") {
+          y = i;
+        } else if (str[i] === "]") {
+          z = i;
+          break;
+        }
+        i++;
+      }
+      if (x !== -1 && y !== -1 && z !== -1) {
+        const times = Number(str.slice(x + 1, y));
+        const sub = str.slice(y + 1, z);
+        const decode_str = str.slice(0, x) + sub.repeat(times) + str.slice(z + 1);
+        return decodeStr(decode_str);
+      }
+      return str;
+    }
+    ```
+42. 矩阵最短路径和
+    ```
+    /**
+    [
+      [1, 3, 1],
+      [1, 5, 1],
+      [4, 2, 1],
+    ]
+    ---> 7
+    */
+    function findTwoArrayMinPath(arr) {
+      const m = arr.length - 1;
+      for (let i = m; i >= 0; i--) {
+        const n = arr[0].length - 1;
+        for (let j = n; j >= 0; j--) {
+          if (i === m && j !== n) {
+            arr[i][j] = arr[i][j] + arr[i][j + 1];
+          } else if (i !== m && j === n) {
+            arr[i][j] = arr[i][j] + arr[i + 1][j];
+          } else if (i !== m && j !== n) {
+            arr[i][j] = arr[i][j] + Math.min(arr[i + 1][j], arr[i][j + 1]);
+          }
+        }
+      }
+      return arr[0][0];
+    }
+    ```
+43. 最少优惠券数量
+    ```
+    // minCoupon(65, [4, 30, 20, 10, 5])
+    // [30,30,5]
+    function minCoupon(money, list) {
+      list = list.sort((a, b) => b - a);
+      function _coupon(total, minus, tmp) {
+        if (total < minus[minus.length - 1] || tmp.length >= 5) return tmp;
+        if (total - minus[0] >= 0) {
+          tmp.push(minus[0]);
+          return _coupon(total - minus[0], minus, tmp);
+        } else {
+          return _coupon(total, minus.slice(1), tmp);
+        }
+      }
+      const result = [];
+      return _coupon(money, list, result);
     }
     ```
 
